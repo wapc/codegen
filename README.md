@@ -19,13 +19,13 @@ apex list templates
 ```
 
 ```
-+-----------------------+------------------------------+
-| NAME                  | DESCRIPTION                  |
-+-----------------------+------------------------------+
-| ...                   | ...                          |
-| @wapc/assemblyscript  | AssemblyScript waPC project  |
-| @wapc/tinygo          | waPC TinyGo module project   |
-+-----------------------+------------------------------+
++-----------------------+-------------------------------------+
+| NAME                  | DESCRIPTION                         |
++-----------------------+-------------------------------------+
+| ...                   | ...                                 |
+| @wapc/assemblyscript  | AssemblyScript waPC module project  |
+| @wapc/tinygo          | TinyGo waPC module project          |
++-----------------------+-------------------------------------+
 ```
 
 To create a new TinyGo waPC module, run:

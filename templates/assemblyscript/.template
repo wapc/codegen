@@ -1,5 +1,5 @@
 name: '@wapc/assemblyscript'
-description: AssemblyScript waPC project
+description: AssemblyScript waPC module project
 variables:
 
 - name: description

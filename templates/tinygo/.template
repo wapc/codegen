@@ -1,5 +1,5 @@
 name: '@wapc/tinygo'
-description: waPC TinyGo module project
+description: TinyGo waPC module project
 variables:
 
 - name: module
