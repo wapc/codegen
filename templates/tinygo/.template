@@ -1,5 +1,5 @@
-name: go
-description: Go API project
+name: '@wapc/tinygo'
+description: waPC TinyGo module project
 variables:
 
 - name: module

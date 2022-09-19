@@ -13,8 +13,8 @@ generates:
     module: '@apexlang/codegen/go'
     visitorClass: InterfacesVisitor
   pkg/outputtest/wapc.go:
-    module: '@apexlang/codegen/tinygo'
-    visitorClass: WapcExportVisitor
+    module: '@wapc/codegen/tinygo'
+    visitorClass: ExportVisitor
   pkg/outputtest/services.go:
     ifNotExists: false
     module: '@apexlang/codegen/go'
@@ -24,7 +24,7 @@ generates:
         - service
   cmd/main.go:
     ifNotExists: false
-    module: '@apexlang/codegen/tinygo'
-    visitorClass: WapcMainVisitor
+    module: '@wapc/codegen/tinygo'
+    visitorClass: MainVisitor
     config:
       import: github.com/apexlang/outputtest/pkg/outputtest
