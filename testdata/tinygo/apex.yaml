@@ -12,6 +12,9 @@ generates:
   pkg/outputtest/interfaces.go:
     module: '@apexlang/codegen/go'
     visitorClass: InterfacesVisitor
+  pkg/outputtest/msgpack.go:
+    module: '@apexlang/codegen/go'
+    visitorClass: MsgPackVisitor
   pkg/outputtest/wapc.go:
     module: '@wapc/codegen/tinygo'
     visitorClass: ExportVisitor
