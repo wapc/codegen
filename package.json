@@ -1,6 +1,6 @@
 {
   "name": "@wapc/codegen",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Code generators for waPC",
   "keywords": [
     "wapc",
@@ -22,7 +22,9 @@
     "src",
     "docs",
     "definitions",
-    "templates"
+    "templates",
+    "*.js",
+    "*.d.ts"
   ],
   "sideEffects": false,
   "scripts": {

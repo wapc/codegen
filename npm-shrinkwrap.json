@@ -1,12 +1,12 @@
 {
   "name": "@wapc/codegen",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@wapc/codegen",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "dependencies": {
         "@apexlang/codegen": "0.0.11",
         "@apexlang/core": "^0.1.1"
