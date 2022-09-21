@@ -15,18 +15,7 @@ limitations under the License.
 */
 
 import { BaseVisitor, Context, Writer } from "@apexlang/core/model";
-import {
-  convertOperationToType,
-  convertUnionToType,
-  uncapitalize,
-} from "@apexlang/codegen/utils";
-import {
-  Import,
-  StructVisitor,
-  MsgPackEncoderUnionVisitor,
-  MsgPackEncoderVisitor,
-  MsgPackDecoderVisitor,
-} from "@apexlang/codegen/go";
+import { Import } from "@apexlang/codegen/go";
 import { HostVisitor } from "./host_visitor.js";
 import { RegisterVisitor } from "./handlers_visitor.js";
 import { WrapperFuncsVisitor } from "./wrappers_visitor.js";
@@ -58,49 +47,6 @@ export class ExportVisitor extends BaseVisitor {
         context.namespace.accept(context, wrapperFuncs);
       }
     );
-    this.setCallback(
-      "OperationAfter",
-      "arguments",
-      (context: Context): void => {
-        const { interface: iface, operation } = context;
-        if (operation.parameters.length == 0 || operation.isUnary()) {
-          return;
-        }
-        const tr = context.getType.bind(context);
-        const type = convertOperationToType(
-          tr,
-          operation,
-          uncapitalize(iface.name)
-        );
-        const ctx = context.clone({ type: type });
-        const struct = new StructVisitor(this.writer);
-        type.accept(ctx, struct);
-        const decoder = new MsgPackDecoderVisitor(this.writer);
-        type.accept(ctx, decoder);
-        const encoder = new MsgPackEncoderVisitor(this.writer);
-        type.accept(ctx, encoder);
-        this.write(`\n`);
-      }
-    );
-    this.setCallback("Type", "struct", (context: Context): void => {
-      const { type } = context;
-      const decoder = new MsgPackDecoderVisitor(this.writer);
-      type.accept(context, decoder);
-      const encoder = new MsgPackEncoderVisitor(this.writer);
-      type.accept(context, encoder);
-      this.write(`\n`);
-    });
-    this.setCallback("Union", "struct", (context: Context): void => {
-      const { union } = context;
-      const tr = context.getType.bind(context);
-      const type = convertUnionToType(tr, union);
-      const ctx = context.clone({ type: type });
-      const decoder = new MsgPackDecoderVisitor(this.writer);
-      type.accept(ctx, decoder);
-      const encoder = new MsgPackEncoderUnionVisitor(this.writer);
-      type.accept(ctx, encoder);
-      this.write(`\n`);
-    });
   }
 
   visitNamespaceBefore(context: Context): void {

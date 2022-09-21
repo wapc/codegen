@@ -41,4 +41,4 @@ ls -l build
 -rwxr-xr-x  1 uname  staff  18454 Sep 19 14:56 hello-world.wasm
 ```
 
-If you load the project in VS Code (`code .` from the terminal if VS code is in your path), a task will monitor the Apex interface definition for changes and regenerate boilerplate code. If prompted with "Do you allow automatic tasks to run when you open this workspace?", select "Allow and run".
+If you load the project in VS Code (`code .` from the terminal if VS code is in your path), a task will monitor the Apex interface definition for changes and regenerate boilerplate code.
