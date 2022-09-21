@@ -21,6 +21,7 @@ import { HandlersVisitor } from "./handlers_visitor";
 import { WrappersVisitor } from "./wrappers_visitor";
 import { BuilderVisitor } from "./builder_visitor";
 import { convertOperationToType } from "@apexlang/codegen/utils";
+import { expandType } from "./helpers";
 
 export class ModuleVisitor extends ClassVisitor {
   constructor(writer: Writer) {
@@ -56,6 +57,13 @@ export class ModuleVisitor extends ClassVisitor {
       `import { Decoder, Writer, Encoder, Sizer, Codec } from "@wapc/as-msgpack";\n\n`
     );
     super.triggerNamespaceBefore(context);
+  }
+
+  visitAlias(context: Context): void {
+    const { alias } = context;
+    this.write(
+      `export type ${alias.name} = ${expandType(alias.type, false)}\n\n`
+    );
   }
 
   visitInterface(context: Context): void {

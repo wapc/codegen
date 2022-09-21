@@ -27,6 +27,7 @@ import {
   AnyType,
   Context,
   Primitive,
+  Alias,
 } from "@apexlang/core/model";
 import { translations, primitives, decodeFuncs, encodeFuncs } from "./constant";
 
@@ -54,7 +55,7 @@ export function encode(variable: string, t: AnyType): string {
  */
 export function defValue(context: Context, fieldDef: Field): string {
   const name = fieldDef.name;
-  const type = fieldDef.type;
+  let type = fieldDef.type;
   if (fieldDef.default) {
     let returnVal = fieldDef.default.getValue();
     if (fieldDef.type.kind == Kind.Primitive) {
@@ -63,6 +64,11 @@ export function defValue(context: Context, fieldDef: Field): string {
       returnVal = typeName == "string" ? strQuote(returnVal) : returnVal;
     }
     return returnVal;
+  }
+
+  if (type.kind == Kind.Alias) {
+    const a = type as Alias;
+    type = a.type;
   }
 
   switch (type.kind) {
@@ -110,6 +116,10 @@ export function defValue(context: Context, fieldDef: Field): string {
 }
 
 export function defaultValueForType(type: AnyType): string {
+  if (type.kind == Kind.Alias) {
+    const a = type as Alias;
+    type = a.type;
+  }
   switch (type.kind) {
     case Kind.Optional:
       return "null";
@@ -184,7 +194,7 @@ export const expandType = (type: AnyType, useOptional: boolean): string => {
     case Kind.Optional:
       let expanded = expandType((type as Optional).type, true);
       if (useOptional) {
-        return `${expanded} | undefined`;
+        return `${expanded} | null`;
       }
       return expanded;
     default:
@@ -207,6 +217,10 @@ export function read(
   if (variable != "") {
     prefix = variable + " = ";
   }
+  if (t.kind == Kind.Alias) {
+    const a = t as Alias;
+    t = a.type;
+  }
   switch (t.kind) {
     case Kind.Primitive:
     case Kind.Alias:
@@ -227,7 +241,7 @@ export function read(
       if (prevOptional) {
         code += "Nullable";
       }
-      code += "MapType(\n";
+      code += "Map(\n";
       code += `(decoder: Decoder): ${expandType(
         (t as Map).keyType,
         true
@@ -292,6 +306,10 @@ export function write(
   prevOptional: boolean
 ): string {
   let code = "";
+  if (t.kind == Kind.Alias) {
+    const a = t as Alias;
+    t = a.type;
+  }
   switch (t.kind) {
     case Kind.Primitive:
     case Kind.Alias:
@@ -309,7 +327,7 @@ export function write(
       if (prevOptional) {
         code += "Nullable";
       }
-      code += "MapType(" + variable + ",\n";
+      code += "Map(" + variable + ",\n";
       code +=
         "(" +
         typeInst +
