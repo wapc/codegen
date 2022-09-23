@@ -25,6 +25,7 @@ apex list templates
 | ...                   | ...                                 |
 | @wapc/assemblyscript  | AssemblyScript waPC module project  |
 | @wapc/tinygo          | TinyGo waPC module project          |
+| @wapc/rust            | Rust waPC module project          |
 +-----------------------+-------------------------------------+
 ```
 

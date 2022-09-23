@@ -1,0 +1,26 @@
+spec: spec.apexlang
+generates:
+  src/generated.rs:
+    module: "@wapc/codegen/rust"
+    config:
+      handlerInterfaces:
+        - wapc
+      hostInterfaces:
+        - wapc
+      serde: true
+  src/lib.rs:
+    ifNotExists: true
+    module: "@wapc/codegen/rust"
+    visitorClass: ScaffoldVisitor
+    config:
+      handlerInterfaces:
+        - wapc
+      hostInterfaces:
+        - wapc
+      use: generated
+      derive:
+        _all:
+          - Debug
+          - PartialEq
+          - Default
+          - Clone
