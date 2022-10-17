@@ -12,7 +12,9 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
-    "./tinygo": "./dist/tinygo/index.js"
+    "./tinygo": "./dist/tinygo/index.js",
+    "./assemblyscript": "./dist/assemblyscript/index.js",
+    "./rust": "./dist/rust/index.js"
   },
   "files": [
     "templates",
