@@ -396,7 +396,7 @@ func myServiceFuncTypeWrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncTypeArgs
+		var inputArgs MyServiceFuncTypeArgs
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncType(ctx, &inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -410,7 +410,7 @@ func myServiceFuncEnumWrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncEnumArgs
+		var inputArgs MyServiceFuncEnumArgs
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncEnum(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -429,7 +429,7 @@ func myServiceFuncAliasWrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncAliasArgs
+		var inputArgs MyServiceFuncAliasArgs
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncAlias(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -448,7 +448,7 @@ func myServiceFuncStringWrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncStringArgs
+		var inputArgs MyServiceFuncStringArgs
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncString(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -467,7 +467,7 @@ func myServiceFuncI64Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncI64Args
+		var inputArgs MyServiceFuncI64Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncI64(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -486,7 +486,7 @@ func myServiceFuncI32Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncI32Args
+		var inputArgs MyServiceFuncI32Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncI32(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -505,7 +505,7 @@ func myServiceFuncI16Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncI16Args
+		var inputArgs MyServiceFuncI16Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncI16(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -524,7 +524,7 @@ func myServiceFuncI8Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncI8Args
+		var inputArgs MyServiceFuncI8Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncI8(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -543,7 +543,7 @@ func myServiceFuncU64Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncU64Args
+		var inputArgs MyServiceFuncU64Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncU64(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -562,7 +562,7 @@ func myServiceFuncU32Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncU32Args
+		var inputArgs MyServiceFuncU32Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncU32(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -581,7 +581,7 @@ func myServiceFuncU16Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncU16Args
+		var inputArgs MyServiceFuncU16Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncU16(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -600,7 +600,7 @@ func myServiceFuncU8Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncU8Args
+		var inputArgs MyServiceFuncU8Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncU8(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -619,7 +619,7 @@ func myServiceFuncF64Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncF64Args
+		var inputArgs MyServiceFuncF64Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncF64(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -638,7 +638,7 @@ func myServiceFuncF32Wrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncF32Args
+		var inputArgs MyServiceFuncF32Args
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncF32(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {
@@ -657,7 +657,7 @@ func myServiceFuncBytesWrapper(svc MyService) wapc.Function {
 	return func(payload []byte) ([]byte, error) {
 		ctx := context.Background()
 		decoder := msgpack.NewDecoder(payload)
-		var inputArgs myServiceFuncBytesArgs
+		var inputArgs MyServiceFuncBytesArgs
 		inputArgs.Decode(&decoder)
 		response, err := svc.FuncBytes(ctx, inputArgs.Value, inputArgs.Optional)
 		if err != nil {

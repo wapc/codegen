@@ -17,11 +17,11 @@ limitations under the License.
 import { Context, BaseVisitor } from "@apexlang/core/model";
 import {
   camelCase,
-  capitalize,
   formatComment,
   isObject,
   isProvider,
   isVoid,
+  operationArgsType,
 } from "@apexlang/codegen/utils";
 import { expandType, read, strQuote, write } from "./helpers";
 
@@ -43,7 +43,7 @@ export class HostVisitor extends BaseVisitor {
       context.config.hostPreamble = true;
     }
     this.write(`\n`);
-    const { operation } = context;
+    const { interface: iface, operation } = context;
     this.write(formatComment("  // ", operation.description));
     this.write(`  ${camelCase(operation.name)}(`);
     operation.parameters.map((param, index) => {
@@ -98,7 +98,7 @@ export class HostVisitor extends BaseVisitor {
       }
     } else {
       this.write(
-        `const inputArgs = new ${capitalize(operation.name)}Args();\n`
+        `const inputArgs = new ${operationArgsType(iface, operation)};\n`
       );
       operation.parameters.map((param) => {
         const paramName = param.name;

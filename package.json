@@ -1,6 +1,6 @@
 {
   "name": "@wapc/codegen",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Code generators for waPC",
   "keywords": [
     "wapc",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@apexlang/core": "^0.1.1",
-    "@apexlang/codegen": "0.0.11"
+    "@apexlang/codegen": "0.0.15"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.22.0",

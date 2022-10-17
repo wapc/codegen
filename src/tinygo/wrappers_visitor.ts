@@ -32,6 +32,7 @@ import {
   isObject,
   uncapitalize,
   isService,
+  operationArgsType,
 } from "@apexlang/codegen/utils";
 
 export class WrapperVarsVisitor extends BaseVisitor {
@@ -138,9 +139,7 @@ export class WrapperFuncsVisitor extends BaseVisitor {
       );
     } else {
       if (operation.parameters.length > 0) {
-        this.write(`var inputArgs ${uncapitalize(iface.name)}${capitalize(
-          operation.name
-        )}Args
+        this.write(`var inputArgs ${operationArgsType(iface, operation)}
         inputArgs.Decode(&decoder)\n`);
       }
       this.write(isVoid(operation.type) ? "err := " : "response, err := ");

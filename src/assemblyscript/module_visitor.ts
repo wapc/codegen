@@ -72,12 +72,12 @@ export class ModuleVisitor extends ClassVisitor {
   }
 
   visitOperation(context: Context): void {
-    const { operation } = context;
+    const { interface: iface, operation } = context;
     if (operation.parameters.length == 0 || operation.isUnary()) {
       return;
     }
     const tr = context.getType.bind(context);
-    const argObject = convertOperationToType(tr, operation);
+    const argObject = convertOperationToType(tr, iface, operation);
     const args = new ClassVisitor(this.writer);
     argObject.accept(context.clone({ type: argObject }), args);
     super.triggerOperation(context);

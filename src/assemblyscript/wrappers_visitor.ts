@@ -20,6 +20,7 @@ import {
   isHandler,
   isObject,
   isVoid,
+  operationArgsType,
 } from "@apexlang/codegen/utils";
 import {
   expandType,
@@ -35,7 +36,7 @@ export class WrappersVisitor extends BaseVisitor {
     if (!isHandler(context)) {
       return;
     }
-    const { operation } = context;
+    const { interface: iface, operation } = context;
     this.write(
       `var ${operation.name}Handler: (${mapArgs(operation.parameters)}) => `
     );
@@ -64,7 +65,10 @@ export class WrappersVisitor extends BaseVisitor {
       }
     } else {
       if (operation.parameters.length > 0) {
-        this.write(`const inputArgs = new ${capitalize(operation.name)}Args();
+        this.write(`const inputArgs = new ${operationArgsType(
+          iface,
+          operation
+        )};
         inputArgs.decode(decoder);
         if (decoder.error()) {
           return Result.error<ArrayBuffer>(decoder.error()!)
