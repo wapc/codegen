@@ -16,7 +16,6 @@ limitations under the License.
 
 import { Context, BaseVisitor } from "@apexlang/core/model";
 import {
-  capitalize,
   isHandler,
   isObject,
   isVoid,

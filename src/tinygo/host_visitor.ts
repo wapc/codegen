@@ -144,7 +144,7 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
       );
     } else {
       this.write(
-        `inputArgs := ${uncapitalize(iface.name)}${fieldName(
+        `inputArgs := ${capitalize(iface.name)}${fieldName(
           operation,
           operation.name
         )}Args{\n`
