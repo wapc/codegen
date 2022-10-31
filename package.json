@@ -1,6 +1,6 @@
 {
   "name": "@wapc/codegen",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Code generators for waPC",
   "keywords": [
     "wapc",
