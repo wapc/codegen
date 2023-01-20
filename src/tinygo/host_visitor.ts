@@ -75,7 +75,7 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
         capitalize(
           operation.name,
         )
-      }(ctx $${$.context}.Context`,
+      }(ctx ${$.context}.Context`,
     );
     operation.parameters.map((param, _index) => {
       this.write(`, `);

@@ -1,33 +1,6 @@
-spec: ../spec.apexlang
+spec: ../spec.axdl
 config:
   package: outputtest
   module: github.com/apexlang/outputtest
-  aliases:
-    UUID:
-      type: uuid.UUID
-      import: github.com/google/uuid
-      parse: uuid.Parse
-      format: String
-generates:
-  pkg/outputtest/interfaces.go:
-    module: '@apexlang/codegen/go'
-    visitorClass: InterfacesVisitor
-  pkg/outputtest/msgpack.go:
-    module: '@apexlang/codegen/go'
-    visitorClass: MsgPackVisitor
-  pkg/outputtest/wapc.go:
-    module: '@wapc/codegen/tinygo'
-    visitorClass: ExportVisitor
-  pkg/outputtest/services.go:
-    ifNotExists: false
-    module: '@apexlang/codegen/go'
-    visitorClass: ScaffoldVisitor
-    config:
-      types:
-        - service
-  cmd/main.go:
-    ifNotExists: false
-    module: '@wapc/codegen/tinygo'
-    visitorClass: MainVisitor
-    config:
-      import: github.com/apexlang/outputtest/pkg/outputtest
+plugins:
+  - ../../../src/tinygo/plugin.ts

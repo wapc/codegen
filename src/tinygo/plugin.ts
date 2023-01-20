@@ -41,16 +41,11 @@ export default function (
         i.annotation("actor") != undefined;
     }) != undefined;
 
-  const hasProviders = interfaces
-    .find((i) => {
-      return i.annotation("provider") != undefined;
-    }) != undefined;
-
   const aliases = config.config.aliases as Aliases;
   if (!aliases.UUID) {
     aliases["UUID"] = {
       type: "uuid.UUID",
-      import: "github.com/nanobus/iota/go/types/uuid",
+      import: "github.com/google/uuid",
       format: "String",
       parse: "uuid.Parse",
     };
@@ -74,6 +69,7 @@ export default function (
   };
 
   const apexCodegenMod = "https://deno.land/x/apex_codegen@v0.1.6/go/mod.ts";
+  const iotaCodegenMod = "https://deno.land/x/iota_codegen@v0.1.6/go/mod.ts";
 
   generates[`pkg/${pkg}/wapc.go`] = {
     module: apexCodegenMod,
@@ -101,17 +97,6 @@ export default function (
       visitorClass: `ScaffoldVisitor`,
       config: {
         types: ["service", "events", "actors"],
-      },
-    };
-  }
-
-  if (hasProviders) {
-    generates[`pkg/${pkg}/providers.go`] = {
-      ifNotExists: true,
-      module: apexCodegenMod,
-      visitorClass: `ScaffoldVisitor`,
-      config: {
-        types: ["provider"],
       },
     };
   }

@@ -4,6 +4,9 @@ package outputtest
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/wapc/tinygo-msgpack"
@@ -11,7 +14,1289 @@ import (
 	"github.com/wapc/wapc-guest-tinygo"
 )
 
-var _ = convert.Package
+type ns struct{}
+
+func (n *ns) Namespace() string {
+	return "apex.testing"
+}
+
+type MyService interface {
+	EmptyVoid(ctx context.Context) error
+	UnaryType(ctx context.Context, value *MyType) (*MyType, error)
+	UnaryEnum(ctx context.Context, value MyEnum) (MyEnum, error)
+	UnaryAlias(ctx context.Context, value uuid.UUID) (uuid.UUID, error)
+	UnaryString(ctx context.Context, value string) (string, error)
+	UnaryI64(ctx context.Context, value int64) (int64, error)
+	UnaryI32(ctx context.Context, value int32) (int32, error)
+	UnaryI16(ctx context.Context, value int16) (int16, error)
+	UnaryI8(ctx context.Context, value int8) (int8, error)
+	UnaryU64(ctx context.Context, value uint64) (uint64, error)
+	UnaryU32(ctx context.Context, value uint32) (uint32, error)
+	UnaryU16(ctx context.Context, value uint16) (uint16, error)
+	UnaryU8(ctx context.Context, value uint8) (uint8, error)
+	UnaryF64(ctx context.Context, value float64) (float64, error)
+	UnaryF32(ctx context.Context, value float32) (float32, error)
+	UnaryBytes(ctx context.Context, value []byte) ([]byte, error)
+	FuncType(ctx context.Context, value *MyType, optional *MyType) (*MyType, error)
+	FuncEnum(ctx context.Context, value MyEnum, optional *MyEnum) (MyEnum, error)
+	FuncAlias(ctx context.Context, value uuid.UUID, optional *uuid.UUID) (uuid.UUID, error)
+	FuncString(ctx context.Context, value string, optional *string) (string, error)
+	FuncI64(ctx context.Context, value int64, optional *int64) (int64, error)
+	FuncI32(ctx context.Context, value int32, optional *int32) (int32, error)
+	FuncI16(ctx context.Context, value int16, optional *int16) (int16, error)
+	FuncI8(ctx context.Context, value int8, optional *int8) (int8, error)
+	FuncU64(ctx context.Context, value uint64, optional *uint64) (uint64, error)
+	FuncU32(ctx context.Context, value uint32, optional *uint32) (uint32, error)
+	FuncU16(ctx context.Context, value uint16, optional *uint16) (uint16, error)
+	FuncU8(ctx context.Context, value uint8, optional *uint8) (uint8, error)
+	FuncF64(ctx context.Context, value float64, optional *float64) (float64, error)
+	FuncF32(ctx context.Context, value float32, optional *float32) (float32, error)
+	FuncBytes(ctx context.Context, value []byte, optional []byte) ([]byte, error)
+}
+
+type Repository interface {
+	GetData(ctx context.Context) (*MyType, error)
+}
+
+// MyType is a class
+type MyType struct {
+	ns
+	// same type value
+	SameValue *MyType `json:"sameValue,omitempty" yaml:"sameValue,omitempty" msgpack:"sameValue,omitempty"`
+	// type value
+	TypeValue MyOtherType `json:"typeValue" yaml:"typeValue" msgpack:"typeValue"`
+	// string value
+	StringValue string `json:"stringValue" yaml:"stringValue" msgpack:"stringValue"`
+	// string option
+	StringOption *string `json:"stringOption,omitempty" yaml:"stringOption,omitempty" msgpack:"stringOption,omitempty"`
+	// i64 value
+	I64Value int64 `json:"i64Value" yaml:"i64Value" msgpack:"i64Value"`
+	// i64 option
+	I64Option *int64 `json:"i64Option,omitempty" yaml:"i64Option,omitempty" msgpack:"i64Option,omitempty"`
+	// i32 value
+	I32Value int32 `json:"i32Value" yaml:"i32Value" msgpack:"i32Value"`
+	// i32 option
+	I32Option *int32 `json:"i32Option,omitempty" yaml:"i32Option,omitempty" msgpack:"i32Option,omitempty"`
+	// i16 value
+	I16Value int16 `json:"i16Value" yaml:"i16Value" msgpack:"i16Value"`
+	// i16 option
+	I16Option *int16 `json:"i16Option,omitempty" yaml:"i16Option,omitempty" msgpack:"i16Option,omitempty"`
+	// i8 value
+	I8Value int8 `json:"i8Value" yaml:"i8Value" msgpack:"i8Value"`
+	// i8 option
+	I8Option *int8 `json:"i8Option,omitempty" yaml:"i8Option,omitempty" msgpack:"i8Option,omitempty"`
+	// u64 value
+	U64Value uint64 `json:"u64Value" yaml:"u64Value" msgpack:"u64Value"`
+	// u64 option
+	U64Option *uint64 `json:"u64Option,omitempty" yaml:"u64Option,omitempty" msgpack:"u64Option,omitempty"`
+	// u32 value
+	U32Value uint32 `json:"u32Value" yaml:"u32Value" msgpack:"u32Value"`
+	// u32 option
+	U32Option *uint32 `json:"u32Option,omitempty" yaml:"u32Option,omitempty" msgpack:"u32Option,omitempty"`
+	// u16 value
+	U16Value uint16 `json:"u16Value" yaml:"u16Value" msgpack:"u16Value"`
+	// u16 option
+	U16Option *uint16 `json:"u16Option,omitempty" yaml:"u16Option,omitempty" msgpack:"u16Option,omitempty"`
+	// u8 value
+	U8Value uint8 `json:"u8Value" yaml:"u8Value" msgpack:"u8Value"`
+	// u8 option
+	U8Option *uint8 `json:"u8Option,omitempty" yaml:"u8Option,omitempty" msgpack:"u8Option,omitempty"`
+	// f64 value
+	F64Value float64 `json:"f64Value" yaml:"f64Value" msgpack:"f64Value"`
+	// f64 option
+	F64Option *float64 `json:"f64Option,omitempty" yaml:"f64Option,omitempty" msgpack:"f64Option,omitempty"`
+	// f32 value
+	F32Value float32 `json:"f32Value" yaml:"f32Value" msgpack:"f32Value"`
+	// f32 option
+	F32Option *float32 `json:"f32Option,omitempty" yaml:"f32Option,omitempty" msgpack:"f32Option,omitempty"`
+	// datetime value
+	DatetimeValue time.Time `json:"datetimeValue" yaml:"datetimeValue" msgpack:"datetimeValue"`
+	// datetime option
+	DatetimeOption *time.Time `json:"datetimeOption,omitempty" yaml:"datetimeOption,omitempty" msgpack:"datetimeOption,omitempty"`
+	// bytes value
+	BytesValue []byte `json:"bytesValue" yaml:"bytesValue" msgpack:"bytesValue"`
+	// bytes option
+	BytesOption []byte `json:"bytesOption,omitempty" yaml:"bytesOption,omitempty" msgpack:"bytesOption,omitempty"`
+	// map value
+	MapValue map[string]int64 `json:"mapValue" yaml:"mapValue" msgpack:"mapValue"`
+	// map of types
+	MapOfTypes map[string]MyType `json:"mapOfTypes" yaml:"mapOfTypes" msgpack:"mapOfTypes"`
+	// array value
+	ArrayValue []string `json:"arrayValue" yaml:"arrayValue" msgpack:"arrayValue"`
+	// array of types
+	ArrayOfTypes []MyType `json:"arrayOfTypes" yaml:"arrayOfTypes" msgpack:"arrayOfTypes"`
+	// union value
+	UnionValue MyUnion `json:"unionValue" yaml:"unionValue" msgpack:"unionValue"`
+	// union option
+	UnionOption *MyUnion `json:"unionOption,omitempty" yaml:"unionOption,omitempty" msgpack:"unionOption,omitempty"`
+	// enum value
+	EnumValue MyEnum `json:"enumValue" yaml:"enumValue" msgpack:"enumValue"`
+	// enum option
+	EnumOption *MyEnum `json:"enumOption,omitempty" yaml:"enumOption,omitempty" msgpack:"enumOption,omitempty"`
+	// enum value
+	AliasValue uuid.UUID `json:"aliasValue" yaml:"aliasValue" msgpack:"aliasValue"`
+	// enum option
+	AliasOption *uuid.UUID `json:"aliasOption,omitempty" yaml:"aliasOption,omitempty" msgpack:"aliasOption,omitempty"`
+}
+
+func (m *MyType) Type() string {
+	return "MyType"
+}
+
+type MyOtherType struct {
+	ns
+	Foo string `json:"foo" yaml:"foo" msgpack:"foo"`
+	Bar string `json:"bar" yaml:"bar" msgpack:"bar"`
+}
+
+func (m *MyOtherType) Type() string {
+	return "MyOtherType"
+}
+
+type MyUnion struct {
+	MyType *MyType `json:"MyType,omitempty" yaml:"MyType,omitempty" msgpack:"MyType,omitempty"`
+	MyEnum *MyEnum `json:"MyEnum,omitempty" yaml:"MyEnum,omitempty" msgpack:"MyEnum,omitempty"`
+	String *string `json:"string,omitempty" yaml:"string,omitempty" msgpack:"string,omitempty"`
+}
+
+// MyEnum is an emuneration
+type MyEnum int32
+
+const (
+	// ONE value
+	MyEnumOne MyEnum = 0
+	// TWO value
+	MyEnumTwo MyEnum = 1
+	// THREE value
+	MyEnumThree MyEnum = 2
+)
+
+var toStringMyEnum = map[MyEnum]string{
+	MyEnumOne:   "one",
+	MyEnumTwo:   "TWO",
+	MyEnumThree: "three",
+}
+
+var toIDMyEnum = map[string]MyEnum{
+	"one":   MyEnumOne,
+	"TWO":   MyEnumTwo,
+	"three": MyEnumThree,
+}
+
+func (e MyEnum) Type() string {
+	return "MyEnum"
+}
+
+func (e MyEnum) String() string {
+	str, ok := toStringMyEnum[e]
+	if !ok {
+		return "unknown"
+	}
+	return str
+}
+
+func (e *MyEnum) FromString(str string) error {
+	var ok bool
+	*e, ok = toIDMyEnum[str]
+	if !ok {
+		return errors.New("unknown value \"" + str + "\" for MyEnum")
+	}
+	return nil
+}
+
+// MarshalJSON marshals the enum as a quoted json string
+func (e MyEnum) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.String())
+}
+
+// UnmarshalJSON unmashals a quoted json string to the enum value
+func (e *MyEnum) UnmarshalJSON(b []byte) error {
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+	return e.FromString(str)
+}
+
+type MyServiceFuncTypeArgs struct {
+	Value    MyType  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *MyType `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncTypeArgs) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			err = o.Value.Decode(decoder)
+		case "optional":
+			o.Optional, err = msgpack.DecodeNillable[MyType](decoder)
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncTypeArgs) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	o.Value.Encode(encoder)
+	encoder.WriteString("optional")
+	o.Optional.Encode(encoder)
+
+	return nil
+}
+
+type MyServiceFuncEnumArgs struct {
+	Value    MyEnum  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *MyEnum `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncEnumArgs) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = convert.Numeric[MyEnum](decoder.ReadInt32())
+		case "optional":
+			o.Optional, err = convert.NillableNumeric[MyEnum](decoder.ReadNillableInt32())
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncEnumArgs) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteInt32(int32(o.Value))
+	encoder.WriteString("optional")
+	encoder.WriteNillableInt32((*int32)(o.Optional))
+
+	return nil
+}
+
+type MyServiceFuncAliasArgs struct {
+	Value    uuid.UUID  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *uuid.UUID `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncAliasArgs) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = convert.Parse(uuid.Parse)(decoder.ReadString())
+		case "optional":
+			o.Optional, err = convert.NillableParse(uuid.Parse)(decoder.ReadNillableString())
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncAliasArgs) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteString(o.Value.String())
+	encoder.WriteString("optional")
+	if o.Optional == nil {
+		encoder.WriteNil()
+	} else {
+		encoder.WriteString(o.Optional.String())
+	}
+
+	return nil
+}
+
+type MyServiceFuncStringArgs struct {
+	Value    string  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *string `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncStringArgs) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadString()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableString()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncStringArgs) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteString(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableString(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncI64Args struct {
+	Value    int64  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *int64 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncI64Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadInt64()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableInt64()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncI64Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteInt64(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableInt64(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncI32Args struct {
+	Value    int32  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *int32 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncI32Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadInt32()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableInt32()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncI32Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteInt32(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableInt32(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncI16Args struct {
+	Value    int16  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *int16 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncI16Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadInt16()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableInt16()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncI16Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteInt16(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableInt16(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncI8Args struct {
+	Value    int8  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *int8 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncI8Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadInt8()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableInt8()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncI8Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteInt8(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableInt8(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncU64Args struct {
+	Value    uint64  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *uint64 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncU64Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadUint64()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableUint64()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncU64Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteUint64(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableUint64(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncU32Args struct {
+	Value    uint32  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *uint32 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncU32Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadUint32()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableUint32()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncU32Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteUint32(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableUint32(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncU16Args struct {
+	Value    uint16  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *uint16 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncU16Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadUint16()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableUint16()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncU16Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteUint16(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableUint16(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncU8Args struct {
+	Value    uint8  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *uint8 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncU8Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadUint8()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableUint8()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncU8Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteUint8(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableUint8(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncF64Args struct {
+	Value    float64  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *float64 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncF64Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadFloat64()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableFloat64()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncF64Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteFloat64(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableFloat64(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncF32Args struct {
+	Value    float32  `json:"value" yaml:"value" msgpack:"value"`
+	Optional *float32 `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncF32Args) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadFloat32()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableFloat32()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncF32Args) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteFloat32(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableFloat32(o.Optional)
+
+	return nil
+}
+
+type MyServiceFuncBytesArgs struct {
+	Value    []byte `json:"value" yaml:"value" msgpack:"value"`
+	Optional []byte `json:"optional,omitempty" yaml:"optional,omitempty" msgpack:"optional,omitempty"`
+}
+
+func (o *MyServiceFuncBytesArgs) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "value":
+			o.Value, err = decoder.ReadByteArray()
+		case "optional":
+			o.Optional, err = decoder.ReadNillableByteArray()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyServiceFuncBytesArgs) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("value")
+	encoder.WriteByteArray(o.Value)
+	encoder.WriteString("optional")
+	encoder.WriteNillableByteArray(o.Optional)
+
+	return nil
+}
+
+func (o *MyType) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "sameValue":
+			o.SameValue, err = msgpack.DecodeNillable[MyType](decoder)
+		case "typeValue":
+			err = o.TypeValue.Decode(decoder)
+		case "stringValue":
+			o.StringValue, err = decoder.ReadString()
+		case "stringOption":
+			o.StringOption, err = decoder.ReadNillableString()
+		case "i64Value":
+			o.I64Value, err = decoder.ReadInt64()
+		case "i64Option":
+			o.I64Option, err = decoder.ReadNillableInt64()
+		case "i32Value":
+			o.I32Value, err = decoder.ReadInt32()
+		case "i32Option":
+			o.I32Option, err = decoder.ReadNillableInt32()
+		case "i16Value":
+			o.I16Value, err = decoder.ReadInt16()
+		case "i16Option":
+			o.I16Option, err = decoder.ReadNillableInt16()
+		case "i8Value":
+			o.I8Value, err = decoder.ReadInt8()
+		case "i8Option":
+			o.I8Option, err = decoder.ReadNillableInt8()
+		case "u64Value":
+			o.U64Value, err = decoder.ReadUint64()
+		case "u64Option":
+			o.U64Option, err = decoder.ReadNillableUint64()
+		case "u32Value":
+			o.U32Value, err = decoder.ReadUint32()
+		case "u32Option":
+			o.U32Option, err = decoder.ReadNillableUint32()
+		case "u16Value":
+			o.U16Value, err = decoder.ReadUint16()
+		case "u16Option":
+			o.U16Option, err = decoder.ReadNillableUint16()
+		case "u8Value":
+			o.U8Value, err = decoder.ReadUint8()
+		case "u8Option":
+			o.U8Option, err = decoder.ReadNillableUint8()
+		case "f64Value":
+			o.F64Value, err = decoder.ReadFloat64()
+		case "f64Option":
+			o.F64Option, err = decoder.ReadNillableFloat64()
+		case "f32Value":
+			o.F32Value, err = decoder.ReadFloat32()
+		case "f32Option":
+			o.F32Option, err = decoder.ReadNillableFloat32()
+		case "datetimeValue":
+			o.DatetimeValue, err = decoder.ReadTime()
+		case "datetimeOption":
+			o.DatetimeOption, err = decoder.ReadNillableTime()
+		case "bytesValue":
+			o.BytesValue, err = decoder.ReadByteArray()
+		case "bytesOption":
+			o.BytesOption, err = decoder.ReadNillableByteArray()
+		case "mapValue":
+			mapSize, err := decoder.ReadMapSize()
+			if err != nil {
+				return err
+			}
+			o.MapValue = make(map[string]int64, mapSize)
+			for mapSize > 0 {
+				mapSize--
+				key, err := decoder.ReadString()
+				if err != nil {
+					return err
+				}
+				value, err := decoder.ReadInt64()
+				if err != nil {
+					return err
+				}
+				o.MapValue[key] = value
+			}
+		case "mapOfTypes":
+			mapSize, err := decoder.ReadMapSize()
+			if err != nil {
+				return err
+			}
+			o.MapOfTypes = make(map[string]MyType, mapSize)
+			for mapSize > 0 {
+				mapSize--
+				key, err := decoder.ReadString()
+				if err != nil {
+					return err
+				}
+				value, err := msgpack.Decode[MyType](decoder)
+				if err != nil {
+					return err
+				}
+				o.MapOfTypes[key] = value
+			}
+		case "arrayValue":
+			listSize, err := decoder.ReadArraySize()
+			if err != nil {
+				return err
+			}
+			o.ArrayValue = make([]string, 0, listSize)
+			for listSize > 0 {
+				listSize--
+				var nonNilItem string
+				nonNilItem, err = decoder.ReadString()
+				if err != nil {
+					return err
+				}
+				o.ArrayValue = append(o.ArrayValue, nonNilItem)
+			}
+		case "arrayOfTypes":
+			listSize, err := decoder.ReadArraySize()
+			if err != nil {
+				return err
+			}
+			o.ArrayOfTypes = make([]MyType, 0, listSize)
+			for listSize > 0 {
+				listSize--
+				var nonNilItem MyType
+				err = nonNilItem.Decode(decoder)
+				if err != nil {
+					return err
+				}
+				o.ArrayOfTypes = append(o.ArrayOfTypes, nonNilItem)
+			}
+		case "unionValue":
+			o.UnionValue, err = msgpack.Decode[MyUnion](decoder)
+		case "unionOption":
+			o.UnionOption, err = msgpack.DecodeNillable[MyUnion](decoder)
+		case "enumValue":
+			o.EnumValue, err = convert.Numeric[MyEnum](decoder.ReadInt32())
+		case "enumOption":
+			o.EnumOption, err = convert.NillableNumeric[MyEnum](decoder.ReadNillableInt32())
+		case "aliasValue":
+			o.AliasValue, err = convert.Parse(uuid.Parse)(decoder.ReadString())
+		case "aliasOption":
+			o.AliasOption, err = convert.NillableParse(uuid.Parse)(decoder.ReadNillableString())
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyType) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(38)
+	encoder.WriteString("sameValue")
+	o.SameValue.Encode(encoder)
+	encoder.WriteString("typeValue")
+	o.TypeValue.Encode(encoder)
+	encoder.WriteString("stringValue")
+	encoder.WriteString(o.StringValue)
+	encoder.WriteString("stringOption")
+	encoder.WriteNillableString(o.StringOption)
+	encoder.WriteString("i64Value")
+	encoder.WriteInt64(o.I64Value)
+	encoder.WriteString("i64Option")
+	encoder.WriteNillableInt64(o.I64Option)
+	encoder.WriteString("i32Value")
+	encoder.WriteInt32(o.I32Value)
+	encoder.WriteString("i32Option")
+	encoder.WriteNillableInt32(o.I32Option)
+	encoder.WriteString("i16Value")
+	encoder.WriteInt16(o.I16Value)
+	encoder.WriteString("i16Option")
+	encoder.WriteNillableInt16(o.I16Option)
+	encoder.WriteString("i8Value")
+	encoder.WriteInt8(o.I8Value)
+	encoder.WriteString("i8Option")
+	encoder.WriteNillableInt8(o.I8Option)
+	encoder.WriteString("u64Value")
+	encoder.WriteUint64(o.U64Value)
+	encoder.WriteString("u64Option")
+	encoder.WriteNillableUint64(o.U64Option)
+	encoder.WriteString("u32Value")
+	encoder.WriteUint32(o.U32Value)
+	encoder.WriteString("u32Option")
+	encoder.WriteNillableUint32(o.U32Option)
+	encoder.WriteString("u16Value")
+	encoder.WriteUint16(o.U16Value)
+	encoder.WriteString("u16Option")
+	encoder.WriteNillableUint16(o.U16Option)
+	encoder.WriteString("u8Value")
+	encoder.WriteUint8(o.U8Value)
+	encoder.WriteString("u8Option")
+	encoder.WriteNillableUint8(o.U8Option)
+	encoder.WriteString("f64Value")
+	encoder.WriteFloat64(o.F64Value)
+	encoder.WriteString("f64Option")
+	encoder.WriteNillableFloat64(o.F64Option)
+	encoder.WriteString("f32Value")
+	encoder.WriteFloat32(o.F32Value)
+	encoder.WriteString("f32Option")
+	encoder.WriteNillableFloat32(o.F32Option)
+	encoder.WriteString("datetimeValue")
+	encoder.WriteTime(o.DatetimeValue)
+	encoder.WriteString("datetimeOption")
+	encoder.WriteNillableTime(o.DatetimeOption)
+	encoder.WriteString("bytesValue")
+	encoder.WriteByteArray(o.BytesValue)
+	encoder.WriteString("bytesOption")
+	encoder.WriteNillableByteArray(o.BytesOption)
+	encoder.WriteString("mapValue")
+	encoder.WriteMapSize(uint32(len(o.MapValue)))
+	if o.MapValue != nil { // TinyGo bug: ranging over nil maps panics.
+		for k, v := range o.MapValue {
+			encoder.WriteString(k)
+			encoder.WriteInt64(v)
+		}
+	}
+	encoder.WriteString("mapOfTypes")
+	encoder.WriteMapSize(uint32(len(o.MapOfTypes)))
+	if o.MapOfTypes != nil { // TinyGo bug: ranging over nil maps panics.
+		for k, v := range o.MapOfTypes {
+			encoder.WriteString(k)
+			v.Encode(encoder)
+		}
+	}
+	encoder.WriteString("arrayValue")
+	encoder.WriteArraySize(uint32(len(o.ArrayValue)))
+	for _, v := range o.ArrayValue {
+		encoder.WriteString(v)
+	}
+	encoder.WriteString("arrayOfTypes")
+	encoder.WriteArraySize(uint32(len(o.ArrayOfTypes)))
+	for _, v := range o.ArrayOfTypes {
+		v.Encode(encoder)
+	}
+	encoder.WriteString("unionValue")
+	o.UnionValue.Encode(encoder)
+	encoder.WriteString("unionOption")
+	if o.UnionOption == nil {
+		encoder.WriteNil()
+	} else {
+		o.UnionOption.Encode(encoder)
+	}
+	encoder.WriteString("enumValue")
+	encoder.WriteInt32(int32(o.EnumValue))
+	encoder.WriteString("enumOption")
+	encoder.WriteNillableInt32((*int32)(o.EnumOption))
+	encoder.WriteString("aliasValue")
+	encoder.WriteString(o.AliasValue.String())
+	encoder.WriteString("aliasOption")
+	if o.AliasOption == nil {
+		encoder.WriteNil()
+	} else {
+		encoder.WriteString(o.AliasOption.String())
+	}
+
+	return nil
+}
+
+func (o *MyOtherType) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "foo":
+			o.Foo, err = decoder.ReadString()
+		case "bar":
+			o.Bar, err = decoder.ReadString()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyOtherType) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	encoder.WriteMapSize(2)
+	encoder.WriteString("foo")
+	encoder.WriteString(o.Foo)
+	encoder.WriteString("bar")
+	encoder.WriteString(o.Bar)
+
+	return nil
+}
+
+func (o *MyUnion) Decode(decoder msgpack.Reader) error {
+	numFields, err := decoder.ReadMapSize()
+	if err != nil {
+		return err
+	}
+
+	for numFields > 0 {
+		numFields--
+		field, err := decoder.ReadString()
+		if err != nil {
+			return err
+		}
+		switch field {
+		case "MyType":
+			o.MyType, err = msgpack.DecodeNillable[MyType](decoder)
+		case "MyEnum":
+			o.MyEnum, err = convert.NillableNumeric[MyEnum](decoder.ReadNillableInt32())
+		case "string":
+			o.String, err = decoder.ReadNillableString()
+		default:
+			err = decoder.Skip()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *MyUnion) Encode(encoder msgpack.Writer) error {
+	if o == nil {
+		encoder.WriteNil()
+		return nil
+	}
+	if o.MyType != nil {
+		encoder.WriteMapSize(1)
+		encoder.WriteString("MyType")
+		o.MyType.Encode(encoder)
+		return nil
+	}
+	if o.MyEnum != nil {
+		encoder.WriteMapSize(1)
+		encoder.WriteString("MyEnum")
+		encoder.WriteNillableInt32((*int32)(o.MyEnum))
+		return nil
+	}
+	if o.String != nil {
+		encoder.WriteMapSize(1)
+		encoder.WriteString("string")
+		encoder.WriteNillableString(o.String)
+		return nil
+	}
+
+	encoder.WriteNil()
+	return nil
+}
 
 type RepositoryImpl struct {
 	binding string
