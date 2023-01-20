@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor } from "@apexlang/core/model";
-import { read } from "./helpers";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { read } from "./helpers.ts";
 
 export class DecoderVisitor extends BaseVisitor {
   visitTypeFieldsBefore(context: Context): void {
@@ -39,7 +39,7 @@ export class DecoderVisitor extends BaseVisitor {
 
     while (numFields > 0) {
       numFields--;
-      const field = decoder.readString();\n\n`
+      const field = decoder.readString();\n\n`,
     );
   }
 

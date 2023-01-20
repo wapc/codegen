@@ -19,9 +19,9 @@ import {
   formatComment,
   isHandler,
   isVoid,
-} from "@apexlang/codegen/utils";
-import { Context, BaseVisitor } from "@apexlang/core/model";
-import { expandType, mapArgs, mapArg } from "./helpers";
+} from "../deps/codegen/utils.ts";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { expandType, mapArg, mapArgs } from "./helpers.ts";
 
 export class HandlersVisitor extends BaseVisitor {
   visitOperation(context: Context): void {
@@ -54,7 +54,8 @@ export class HandlersVisitor extends BaseVisitor {
     }
     opVal += `): void {\n`;
     opVal += `${operation.name}Handler = handler;\n`;
-    opVal += `register("${ns.name}.${iface.name}/${operation.name}", ${operation.name}Wrapper);\n}\n`;
+    opVal +=
+      `register("${ns.name}.${iface.name}/${operation.name}", ${operation.name}Wrapper);\n}\n`;
     this.write(opVal);
     super.triggerOperation(context);
   }

@@ -1,6 +1,7 @@
-import { Parameter, ObjectMap } from "@apexlang/core/model.js";
-import { snakeCase } from "./utils/index.js";
-import { utils as rustUtils } from "@apexlang/codegen/rust";
+// deno-lint-ignore-file no-explicit-any
+import { ObjectMap, Parameter } from "../deps/core/model.ts";
+import { snakeCase } from "./utils/mod.ts";
+import { utils as rustUtils } from "../deps/codegen/rust.ts";
 
 export function functionName(str: string): string {
   return rustUtils.rustify(str);
@@ -16,7 +17,7 @@ export function fieldName(str: string): string {
 export function mapArgs(
   args: Parameter[],
   config: ObjectMap<any>,
-  template: boolean = false
+  template = false,
 ): string {
   return args
     .map((arg) => {
@@ -28,7 +29,7 @@ export function mapArgs(
 export function mapArg(
   arg: Parameter,
   config: ObjectMap<any>,
-  template: boolean = false
+  template = false,
 ): string {
   return (
     (template ? "_" : "") +

@@ -14,22 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor } from "@apexlang/core/model";
+import { Context } from "../deps/core/model.ts";
 import {
   expandType,
-  mapParams,
+  getImporter,
+  GoVisitor,
   mapParam,
+  mapParams,
   translateAlias,
-} from "@apexlang/codegen/go";
+} from "../deps/codegen/go.ts";
 import {
   capitalize,
-  uncapitalize,
-  isVoid,
   formatComment,
   isService,
-} from "@apexlang/codegen/utils";
+  isVoid,
+  uncapitalize,
+} from "../deps/codegen/utils.ts";
+import { IMPORTS } from "./constants.ts";
 
-export class HandlersVisitor extends BaseVisitor {
+export class HandlersVisitor extends GoVisitor {
   visitOperation(context: Context): void {
     if (!isService(context)) {
       return;
@@ -51,7 +54,7 @@ export class HandlersVisitor extends BaseVisitor {
     this.write(`)`);
     if (!isVoid(operation.type)) {
       this.write(
-        ` (${expandType(operation.type, undefined, true, tr)}, error)`
+        ` (${expandType(operation.type, undefined, true, tr)}, error)`,
       );
     } else {
       this.write(` error`);
@@ -68,14 +71,14 @@ export class HandlersVisitor extends BaseVisitor {
   }
 }
 
-export class RegisterVisitor extends BaseVisitor {
+export class RegisterVisitor extends GoVisitor {
   visitInterfaceBefore(context: Context): void {
     if (!isService(context)) {
       return;
     }
     super.triggerInterfaceBefore(context);
     this.write(
-      `func Register${context.interface.name}(svc ${context.interface.name}) {\n`
+      `func Register${context.interface.name}(svc ${context.interface.name}) {\n`,
     );
   }
 
@@ -83,14 +86,16 @@ export class RegisterVisitor extends BaseVisitor {
     if (!isService(context)) {
       return;
     }
-    const { namespace: ns, interface: iface } = context;
-    const operation = context.operation;
+    const { namespace: ns, interface: iface, operation } = context;
+    const $ = getImporter(context, IMPORTS);
     this.write(
-      `wapc.RegisterFunction("${ns.name}.${iface.name}/${
-        operation.name
-      }", ${uncapitalize(iface.name)}${capitalize(
-        operation.name
-      )}Wrapper(svc))\n`
+      `${$.wapc}.RegisterFunction("${ns.name}.${iface.name}/${operation.name}", ${
+        uncapitalize(iface.name)
+      }${
+        capitalize(
+          operation.name,
+        )
+      }Wrapper(svc))\n`,
     );
     super.triggerOperation(context);
   }

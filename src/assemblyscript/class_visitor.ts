@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor } from "@apexlang/core/model";
-import { formatComment } from "@apexlang/codegen/utils";
-import { expandType, defValue } from "./helpers";
-import { DecoderVisitor } from "./decoder_visitor";
-import { EncoderVisitor } from "./encoder_visitor";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { formatComment } from "../deps/codegen/utils.ts";
+import { defValue, expandType } from "./helpers.ts";
+import { DecoderVisitor } from "./decoder_visitor.ts";
+import { EncoderVisitor } from "./encoder_visitor.ts";
 
 export class ClassVisitor extends BaseVisitor {
   visitTypeBefore(context: Context): void {
@@ -32,10 +32,12 @@ export class ClassVisitor extends BaseVisitor {
     const { field } = context;
     this.write(formatComment("  // ", field.description));
     this.write(
-      `  ${field.name}: ${expandType(field.type, true)} = ${defValue(
-        context,
-        field
-      )};\n`
+      `  ${field.name}: ${expandType(field.type, true)} = ${
+        defValue(
+          context,
+          field,
+        )
+      };\n`,
     );
     super.triggerTypeField(context);
   }

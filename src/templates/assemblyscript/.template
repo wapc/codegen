@@ -1,0 +1,11 @@
+name: "@wapc/assemblyscript"
+description: waPC AssemblyScript module project
+variables:
+  - name: description
+    description: The project description
+    prompt: Please enter the project description
+
+  - name: version
+    description: The project version
+    prompt: Please enter the version
+    default: 0.0.1

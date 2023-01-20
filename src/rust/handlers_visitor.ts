@@ -1,8 +1,8 @@
-import { Context, Writer, BaseVisitor } from "@apexlang/core/model";
-import { functionName } from "./helpers";
-import { formatComment, shouldIncludeHandler } from "./utils";
-import * as utils from "@apexlang/codegen/utils";
-import { utils as rustUtils } from "@apexlang/codegen/rust";
+import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import { functionName } from "./helpers.ts";
+import { formatComment, shouldIncludeHandler } from "./utils/mod.ts";
+import * as utils from "../deps/codegen/utils.ts";
+import { utils as rustUtils } from "../deps/codegen/rust.ts";
 
 export class HandlersVisitor extends BaseVisitor {
   constructor(writer: Writer) {

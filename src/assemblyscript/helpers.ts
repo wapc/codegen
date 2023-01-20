@@ -14,22 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { capitalize } from "@apexlang/codegen/utils";
+import { capitalize } from "../deps/codegen/utils.ts";
 import {
-  Named,
-  Map,
-  List,
-  Optional,
-  Field,
-  Operation,
-  Parameter,
-  Kind,
+  Alias,
   AnyType,
   Context,
+  Field,
+  Kind,
+  List,
+  Map,
+  Named,
+  Operation,
+  Optional,
+  Parameter,
   Primitive,
-  Alias,
-} from "@apexlang/core/model";
-import { translations, primitives, decodeFuncs, encodeFuncs } from "./constant";
+} from "../deps/core/model.ts";
+import {
+  decodeFuncs,
+  encodeFuncs,
+  primitives,
+  translations,
+} from "./constant.ts";
 
 /**
  * Creates string that is an msgpack size code block
@@ -53,13 +58,12 @@ export function encode(variable: string, t: AnyType): string {
  * Return default value for a Field. Default value of objects are instantiated.
  * @param fieldDef Field Node to get default value of
  */
-export function defValue(context: Context, fieldDef: Field): string {
-  const name = fieldDef.name;
+export function defValue(_context: Context, fieldDef: Field): string {
   let type = fieldDef.type;
   if (fieldDef.default) {
     let returnVal = fieldDef.default.getValue();
     if (fieldDef.type.kind == Kind.Primitive) {
-      var typeName = (fieldDef.type as Primitive).name as string;
+      let typeName = (fieldDef.type as Primitive).name as string;
       typeName = translations.get(typeName) || typeName;
       returnVal = typeName == "string" ? strQuote(returnVal) : returnVal;
     }
@@ -81,8 +85,8 @@ export function defValue(context: Context, fieldDef: Field): string {
     case Kind.Alias:
     case Kind.Enum:
     case Kind.Type:
-    case Kind.Union:
-      var typeName = (fieldDef.type as Named).name;
+    case Kind.Union: {
+      const typeName = (fieldDef.type as Named).name;
       switch (typeName) {
         case "ID":
         case "string":
@@ -111,6 +115,7 @@ export function defValue(context: Context, fieldDef: Field): string {
           // }
           return `new ${capitalize(typeName)}()`; // reference to something else
       }
+    }
   }
   return `???${expandType(type, false)}???`;
 }
@@ -130,7 +135,7 @@ export function defaultValueForType(type: AnyType): string {
     case Kind.Alias:
     case Kind.Enum:
     case Kind.Type:
-    case Kind.Union:
+    case Kind.Union: {
       const name = (type as Named).name;
       switch (name) {
         case "ID":
@@ -154,6 +159,7 @@ export function defaultValueForType(type: AnyType): string {
         default:
           return `new ${capitalize(name)}()`; // reference to something else
       }
+    }
   }
   return "???";
 }
@@ -177,26 +183,30 @@ export const expandType = (type: AnyType, useOptional: boolean): string => {
     case Kind.Alias:
     case Kind.Enum:
     case Kind.Type:
-    case Kind.Union:
+    case Kind.Union: {
       const namedValue = (type as Named).name;
       const translation = translations.get(namedValue);
       if (translation != undefined) {
         return translation!;
       }
       return namedValue;
+    }
     case Kind.Map:
-      return `Map<${expandType((type as Map).keyType, true)},${expandType(
-        (type as Map).valueType,
-        true
-      )}>`;
+      return `Map<${expandType((type as Map).keyType, true)},${
+        expandType(
+          (type as Map).valueType,
+          true,
+        )
+      }>`;
     case Kind.List:
       return `Array<${expandType((type as List).type, true)}>`;
-    case Kind.Optional:
-      let expanded = expandType((type as Optional).type, true);
+    case Kind.Optional: {
+      const expanded = expandType((type as Optional).type, true);
       if (useOptional) {
         return `${expanded} | null`;
       }
       return expanded;
+    }
     default:
       return "unknown";
   }
@@ -211,7 +221,7 @@ export const expandType = (type: AnyType, useOptional: boolean): string => {
 export function read(
   variable: string,
   t: AnyType,
-  prevOptional: boolean
+  prevOptional: boolean,
 ): string {
   let prefix = "return ";
   if (variable != "") {
@@ -226,49 +236,59 @@ export function read(
     case Kind.Alias:
     case Kind.Enum:
     case Kind.Type:
-    case Kind.Union:
-      let namedNode = t as Named;
+    case Kind.Union: {
+      const namedNode = t as Named;
       if (decodeFuncs.has(namedNode.name)) {
         if (prevOptional) {
-          if (primitives.has(namedNode.name))
+          if (primitives.has(namedNode.name)) {
             return `${prefix}decoder.${decodeFuncs.get(namedNode.name)}();\n`;
+          }
         }
         return `${prefix}decoder.${decodeFuncs.get(namedNode.name)}();\n`;
       }
       return `${prefix}${namedNode.name}.decode(decoder);`;
-    case Kind.Map:
+    }
+    case Kind.Map: {
       let code = `${prefix}decoder.read`;
       if (prevOptional) {
         code += "Nullable";
       }
       code += "Map(\n";
-      code += `(decoder: Decoder): ${expandType(
-        (t as Map).keyType,
-        true
-      )} => {\n`;
+      code += `(decoder: Decoder): ${
+        expandType(
+          (t as Map).keyType,
+          true,
+        )
+      } => {\n`;
       code += read("", (t as Map).keyType, false);
       code += "},\n";
-      code += `(decoder: Decoder): ${expandType(
-        (t as Map).valueType,
-        true
-      )} => {\n`;
+      code += `(decoder: Decoder): ${
+        expandType(
+          (t as Map).valueType,
+          true,
+        )
+      } => {\n`;
       code += read("", (t as Map).valueType, false);
       code += "});\n";
       return code;
-    case Kind.List:
+    }
+    case Kind.List: {
       let listCode = "";
       listCode += `${prefix}decoder.read`;
       if (prevOptional) {
         listCode += "Nullable";
       }
-      listCode += `Array((decoder: Decoder): ${expandType(
-        (t as List).type,
-        true
-      )} => {\n`;
+      listCode += `Array((decoder: Decoder): ${
+        expandType(
+          (t as List).type,
+          true,
+        )
+      } => {\n`;
       listCode += read("", (t as List).type, false);
       listCode += "});\n";
       return listCode;
-    case Kind.Optional:
+    }
+    case Kind.Optional: {
       const optNode = t as Optional;
       optNode.type;
       switch (optNode.type.kind) {
@@ -283,6 +303,7 @@ export function read(
       optCode += read(variable, optNode.type, true);
       optCode += "}\n";
       return optCode;
+    }
     default:
       return "unknown";
   }
@@ -303,7 +324,7 @@ export function write(
   typeMeth: string,
   variable: string,
   t: AnyType,
-  prevOptional: boolean
+  prevOptional: boolean,
 ): string {
   let code = "";
   if (t.kind == Kind.Alias) {
@@ -315,21 +336,21 @@ export function write(
     case Kind.Alias:
     case Kind.Enum:
     case Kind.Type:
-    case Kind.Union:
+    case Kind.Union: {
       const namedNode = t as Named;
       if (encodeFuncs.has(namedNode.name)) {
         return `${typeInst}.${encodeFuncs.get(namedNode.name)}(${variable});\n`;
       }
       return `${variable}.${typeMeth}(${typeInst});\n`;
-    case Kind.Map:
+    }
+    case Kind.Map: {
       const mappedNode = t as Map;
       code += typeInst + ".write";
       if (prevOptional) {
         code += "Nullable";
       }
       code += "Map(" + variable + ",\n";
-      code +=
-        "(" +
+      code += "(" +
         typeInst +
         ": " +
         typeClass +
@@ -342,11 +363,10 @@ export function write(
         typeMeth,
         "key",
         mappedNode.keyType,
-        false
+        false,
       );
       code += "},\n";
-      code +=
-        "(" +
+      code += "(" +
         typeInst +
         ": " +
         typeClass +
@@ -359,18 +379,18 @@ export function write(
         typeMeth,
         "value",
         mappedNode.valueType,
-        false
+        false,
       );
       code += "});\n";
       return code;
-    case Kind.List:
+    }
+    case Kind.List: {
       const listNode = t as List;
       code += typeInst + ".write";
       if (prevOptional) {
         code += "Nullable";
       }
-      code +=
-        "Array(" +
+      code += "Array(" +
         variable +
         ", (" +
         typeInst +
@@ -385,11 +405,12 @@ export function write(
         typeMeth,
         "item",
         listNode.type,
-        false
+        false,
       );
       code += "});\n";
       return code;
-    case Kind.Optional:
+    }
+    case Kind.Optional: {
       const optionalNode = t as Optional;
       switch (optionalNode.kind) {
         case Kind.List:
@@ -400,7 +421,7 @@ export function write(
             typeMeth,
             variable,
             optionalNode.type,
-            true
+            true,
           );
       }
       code += "if (" + variable + " === null) {\n";
@@ -412,10 +433,11 @@ export function write(
         typeMeth,
         variable + "!",
         optionalNode.type,
-        true
+        true,
       );
       code += "}\n";
       return code;
+    }
     default:
       return "unknown";
   }
@@ -428,10 +450,12 @@ export function write(
 export function opsAsFns(ops: Operation[]): string {
   return ops
     .map((op) => {
-      return `function ${op.name}(${mapArgs(op.parameters)}): ${expandType(
-        op.type,
-        true
-      )} {\n}`;
+      return `function ${op.name}(${mapArgs(op.parameters)}): ${
+        expandType(
+          op.type,
+          true,
+        )
+      } {\n}`;
     })
     .join("\n");
 }
