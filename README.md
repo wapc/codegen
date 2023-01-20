@@ -9,7 +9,7 @@ Make sure you have the Apex CLI installed. Here are [the instructions](https://a
 From your terminal, run:
 
 ```shell
-apex install https://deno.land/x/wapc_codegen@v0.0.1/templates.ts
+apex install https://deno.land/x/wapc_codegen/templates.ts
 ```
 
 ```shell
