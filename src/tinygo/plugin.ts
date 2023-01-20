@@ -66,7 +66,7 @@ export default function (
     module: mod,
     visitorClass: `MainVisitor`,
     config: {
-      import: `${module}/${pkg}`,
+      import: `${module}/${prefixPkg}${pkg}`,
     },
   };
 
