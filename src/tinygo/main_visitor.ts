@@ -37,8 +37,14 @@ export class MainVisitor extends GoVisitor {
   }
 
   visitNamespaceBefore(context: Context): void {
+    const prefixPkg = (context.config.prefixPkg || `pkg/`).replace(
+      /^\.\//g,
+      "",
+    );
+    const pkg = context.config.package || "module";
+    const module = context.config.module || "github.com/myorg/mymodule";
     const importPath = context.config.import ||
-      "github.com/myorg/mymodule/pkg/module";
+      `${module}/${prefixPkg}${pkg}`;
     super.visitNamespaceBefore(context);
 
     this.uses = this.usesVisitor(this.writer);

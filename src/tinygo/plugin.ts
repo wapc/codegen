@@ -1,4 +1,4 @@
-import { Configuration } from "https://deno.land/x/apex_cli@v0.0.12/src/config.ts";
+import { Configuration } from "https://deno.land/x/apex_cli@v0.0.13/src/config.ts";
 import * as apex from "../deps/core/mod.ts";
 
 const importUrl = new URL(".", import.meta.url);
@@ -59,19 +59,20 @@ export default function (
   const generates = config.generates || [];
   config.generates = generates;
 
-  generates[`cmd/main.go`] = {
-    //ifNotExists: true,
+  const prefixCmd = config.config.prefixCmd || `cmd/`;
+  const prefixPkg = config.config.prefixPkg || `pkg/`;
+
+  generates[`${prefixCmd}main.go`] = {
     module: mod,
     visitorClass: `MainVisitor`,
     config: {
-      import: `${module}/pkg/${pkg}`,
+      import: `${module}/${pkg}`,
     },
   };
 
   const apexCodegenMod = "https://deno.land/x/apex_codegen@v0.1.6/go/mod.ts";
-  const iotaCodegenMod = "https://deno.land/x/iota_codegen@v0.1.6/go/mod.ts";
 
-  generates[`pkg/${pkg}/wapc.go`] = {
+  generates[`${prefixPkg}${pkg}/wapc.go`] = {
     module: apexCodegenMod,
     visitorClass: "GoVisitor",
     append: [
@@ -91,7 +92,7 @@ export default function (
   };
 
   if (hasServices) {
-    generates[`pkg/${pkg}/services.go`] = {
+    generates[`${prefixPkg}${pkg}/services.go`] = {
       ifNotExists: true,
       module: apexCodegenMod,
       visitorClass: `ScaffoldVisitor`,
