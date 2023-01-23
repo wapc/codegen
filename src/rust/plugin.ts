@@ -1,4 +1,7 @@
-import { Configuration } from "https://deno.land/x/apex_cli@v0.0.12/src/config.ts";
+import {
+  Configuration,
+  TaskDefinition,
+} from "https://deno.land/x/apex_cli@v0.0.15/src/config.ts";
 import * as apex from "../deps/core/mod.ts";
 
 const importUrl = new URL(".", import.meta.url);
@@ -55,21 +58,30 @@ export default function (
 
   const tasks = config.tasks ||= {};
   const names = new Set<string>(Object.keys(tasks).map((k) => taskName(k)));
-  const defaultTasks: Record<string, string[]> = {
-    "all > generate deps clean build": [],
-    clean: [
-      "cargo clean",
-      "rm -Rf build",
-    ],
-    deps: [],
-    build: [
-      "mkdir -p build",
-      `cargo build --target wasm32-unknown-unknown --release`,
-      `cp target/wasm32-unknown-unknown/release/${wasmName} build/`,
-    ],
-    "test > build": [
-      "cargo test",
-    ],
+  const defaultTasks: Record<string, TaskDefinition> = {
+    all: {
+      description: "Clean, generate, and build",
+      deps: ["generate", "clean", "build"],
+    },
+    clean: {
+      description: "Clean the build directory",
+      cmds: [
+        "cargo clean",
+        "rm -Rf build",
+      ],
+    },
+    build: {
+      description: "Build the module",
+      cmds: [
+        "mkdir -p build",
+        `cargo build --target wasm32-unknown-unknown --release`,
+        `cp target/wasm32-unknown-unknown/release/${wasmName} build/`,
+      ],
+    },
+    test: {
+      description: "Run tests",
+      cmds: ["cargo test"],
+    },
   };
   for (const key of Object.keys(defaultTasks)) {
     if (!names.has(taskName(key))) {

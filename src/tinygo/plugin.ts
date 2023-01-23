@@ -1,10 +1,8 @@
-import { Configuration } from "https://deno.land/x/apex_cli@v0.0.13/src/config.ts";
+import {
+  Configuration,
+  TaskDefinition,
+} from "https://deno.land/x/apex_cli@v0.0.15/src/config.ts";
 import * as apex from "../deps/core/mod.ts";
-
-const importUrl = new URL(".", import.meta.url);
-function urlify(relpath: string): string {
-  return new URL(relpath, importUrl).toString();
-}
 
 interface Alias {
   type: string;
@@ -13,6 +11,11 @@ interface Alias {
   parse?: string;
 }
 type Aliases = Record<string, Alias>;
+
+const importUrl = new URL(".", import.meta.url);
+function urlify(relpath: string): string {
+  return new URL(relpath, importUrl).toString();
+}
 
 function taskName(taskExpr: string): string {
   const idx = taskExpr.indexOf(">");
@@ -59,8 +62,12 @@ export default function (
   const generates = config.generates || [];
   config.generates = generates;
 
-  const prefixCmd = config.config.prefixCmd || `cmd/`;
-  const prefixPkg = config.config.prefixPkg || `pkg/`;
+  const prefixCmd = config.config.prefixCmd != undefined
+    ? config.config.prefixCmd
+    : `cmd/`;
+  const prefixPkg = config.config.prefixPkg != undefined
+    ? config.config.prefixPkg
+    : `pkg/`;
 
   generates[`${prefixCmd}main.go`] = {
     module: mod,
@@ -104,21 +111,30 @@ export default function (
 
   const tasks = config.tasks ||= {};
   const names = new Set<string>(Object.keys(tasks).map((k) => taskName(k)));
-  const defaultTasks: Record<string, string[]> = {
-    "all > generate deps clean build": [],
-    clean: [
-      "rm -Rf build",
-    ],
-    deps: [
-      "go mod tidy",
-    ],
-    build: [
-      "mkdir -p build",
-      `tinygo build -o build/${config.config.name}.wasm --scheduler=none --target=wasi -no-debug cmd/main.go`,
-    ],
-    test: [
-      "go test --count=1 ./pkg/...",
-    ],
+  const defaultTasks: Record<string, TaskDefinition> = {
+    all: {
+      description: "Clean, generate, and build",
+      deps: ["clean", "generate", "deps", "build"],
+    },
+    clean: {
+      description: "Clean the build directory",
+      cmds: ["rm -Rf build"],
+    },
+    deps: {
+      description: "Install necessary dependencies",
+      cmds: ["go mod tidy"],
+    },
+    build: {
+      description: "Build the module",
+      cmds: [
+        "mkdir -p build",
+        `tinygo build -o build/${config.config.name}.wasm --scheduler=none --target=wasi -no-debug cmd/main.go`,
+      ],
+    },
+    test: {
+      description: "Run tests",
+      cmds: ["go test --count=1 ./pkg/..."],
+    },
   };
   for (const key of Object.keys(defaultTasks)) {
     if (!names.has(taskName(key))) {
