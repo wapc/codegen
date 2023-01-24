@@ -38,7 +38,7 @@ const template: Template = {
         ".vscode/extensions.json",
         ".vscode/settings.json",
         ".vscode/tasks.json",
-        "spec.axdl",
+        "apex.axdl",
       ],
       templates: {
         "tmpl": [

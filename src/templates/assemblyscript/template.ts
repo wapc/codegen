@@ -39,7 +39,7 @@ const template: Template = {
         ".vscode/settings.json",
         ".vscode/tasks.json",
         "assembly/tsconfig.json",
-        "spec.axdl",
+        "apex.axdl",
       ],
       templates: {
         "tmpl": [
