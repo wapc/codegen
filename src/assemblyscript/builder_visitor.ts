@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { capitalize } from "@apexlang/codegen/utils";
-import { Context, BaseVisitor } from "@apexlang/core/model";
-import { expandType } from "./helpers";
+import { capitalize } from "../deps/codegen/utils.ts";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { expandType } from "./helpers.ts";
 
 export class BuilderVisitor extends BaseVisitor {
   visitTypeBefore(context: Context): void {
@@ -30,10 +30,12 @@ export class BuilderVisitor extends BaseVisitor {
     const className = context.type.name;
     const field = context.field!;
     this.write(`\n`);
-    this.write(`with${capitalize(field.name)}(${field.name}: ${expandType(
-      field.type!,
-      true
-    )}): ${className}Builder {
+    this.write(`with${capitalize(field.name)}(${field.name}: ${
+      expandType(
+        field.type!,
+        true,
+      )
+    }): ${className}Builder {
     this.instance.${field.name} = ${field.name};
     return this;
   }\n`);

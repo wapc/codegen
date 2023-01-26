@@ -14,26 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor, Kind } from "@apexlang/core/model";
+import { BaseVisitor, Context, Kind } from "../deps/core/model.ts";
 import {
   expandType,
+  getImporter,
   Import,
   mapParams,
-  returnShare,
-  translateAlias,
-  msgpackSize,
   msgpackEncode,
   msgpackRead,
+  msgpackSize,
   msgpackVarAccessParam,
-} from "@apexlang/codegen/go";
+  returnShare,
+  translateAlias,
+} from "../deps/codegen/go.ts";
 import {
   capitalize,
-  isVoid,
   isObject,
-  uncapitalize,
   isService,
+  isVoid,
   operationArgsType,
-} from "@apexlang/codegen/utils";
+  uncapitalize,
+} from "../deps/codegen/utils.ts";
+import { IMPORTS } from "./constants.ts";
 
 export class WrapperVarsVisitor extends BaseVisitor {
   visitOperation(context: Context): void {
@@ -47,10 +49,12 @@ export class WrapperVarsVisitor extends BaseVisitor {
     }
     const operation = context.operation!;
     this.write(
-      `\t${uncapitalize(operation.name)}Handler func (${mapParams(
-        context,
-        operation.parameters
-      )}) `
+      `\t${uncapitalize(operation.name)}Handler func (${
+        mapParams(
+          context,
+          operation.parameters,
+        )
+      }) `,
     );
     if (!isVoid(operation.type)) {
       this.write(`(${expandType(operation.type, undefined, true, tr)}, error)`);
@@ -82,15 +86,18 @@ export class WrapperFuncsVisitor extends BaseVisitor {
     }
     const tr = translateAlias(context);
     const { interface: iface, operation } = context;
+    const $ = getImporter(context, IMPORTS);
     this.write(
-      `func ${uncapitalize(iface.name)}${capitalize(
-        operation.name
-      )}Wrapper(svc ${iface.name}) wapc.Function {
+      `func ${uncapitalize(iface.name)}${
+        capitalize(
+          operation.name,
+        )
+      }Wrapper(svc ${iface.name}) ${$.wapc}.Function {
         return func(payload []byte) ([]byte, error) {
-          ctx := context.Background()\n`
+          ctx := ${$.context}.Background()\n`,
     );
     if (operation.parameters.length > 0) {
-      this.write(`decoder := msgpack.NewDecoder(payload)\n`);
+      this.write(`decoder := ${$.msgpack}.NewDecoder(payload)\n`);
     }
     if (operation.isUnary()) {
       const unaryParam = operation.parameters[0];
@@ -99,33 +106,39 @@ export class WrapperFuncsVisitor extends BaseVisitor {
         if err != nil {
           return nil, err
         }
-        request := ${expandType(
-          operation.unaryOp().type,
-          undefined,
-          false,
-          tr
-        )}(enumVal)\n`);
+        request := ${
+          expandType(
+            operation.unaryOp().type,
+            undefined,
+            false,
+            tr,
+          )
+        }(enumVal)\n`);
       } else if (isObject(unaryParam.type)) {
-        this.write(`var request ${expandType(
-          operation.unaryOp().type,
-          undefined,
-          false,
-          tr
-        )}
+        this.write(`var request ${
+          expandType(
+            operation.unaryOp().type,
+            undefined,
+            false,
+            tr,
+          )
+        }
         if err := request.Decode(&decoder); err != nil {
           return nil, err
         }\n`);
       } else {
         this.write(
-          `${msgpackRead(
-            context,
-            false,
-            "request",
-            true,
-            "",
-            unaryParam.type,
-            false
-          )}`
+          `${
+            msgpackRead(
+              context,
+              false,
+              "request",
+              true,
+              "",
+              unaryParam.type,
+              false,
+            )
+          }`,
         );
         this.write(`if err != nil {
           return nil, err
@@ -133,9 +146,11 @@ export class WrapperFuncsVisitor extends BaseVisitor {
       }
       this.write(isVoid(operation.type) ? "err := " : "response, err := ");
       this.write(
-        `svc.${capitalize(operation.name)}(ctx, ${returnShare(
-          unaryParam.type
-        )}request)\n`
+        `svc.${capitalize(operation.name)}(ctx, ${
+          returnShare(
+            unaryParam.type,
+          )
+        }request)\n`,
       );
     } else {
       if (operation.parameters.length > 0) {
@@ -144,10 +159,12 @@ export class WrapperFuncsVisitor extends BaseVisitor {
       }
       this.write(isVoid(operation.type) ? "err := " : "response, err := ");
       this.write(
-        `svc.${capitalize(operation.name)}(${msgpackVarAccessParam(
-          "inputArgs",
-          operation.parameters
-        )})\n`
+        `svc.${capitalize(operation.name)}(${
+          msgpackVarAccessParam(
+            "inputArgs",
+            operation.parameters,
+          )
+        })\n`,
       );
     }
     this.write(`if err != nil {
@@ -157,21 +174,21 @@ export class WrapperFuncsVisitor extends BaseVisitor {
       this.visitWrapperBeforeReturn(context);
       this.write(`return []byte{}, nil\n`);
     } else if (operation.type.kind == Kind.Enum) {
-      this.write(`var sizer msgpack.Sizer
+      this.write(`var sizer ${$.msgpack}.Sizer
       sizer.WriteInt32(int32(response))
       ua := make([]byte, sizer.Len());
-      encoder := msgpack.NewEncoder(ua);
+      encoder := ${$.msgpack}.NewEncoder(ua);
       encoder.WriteInt32(int32(response))\n`);
       this.visitWrapperBeforeReturn(context);
       this.write(`return ua, nil\n`);
     } else if (isObject(operation.type)) {
       this.visitWrapperBeforeReturn(context);
-      this.write(`return msgpack.ToBytes(response)\n`);
+      this.write(`return ${$.msgpack}.ToBytes(response)\n`);
     } else {
-      this.write(`var sizer msgpack.Sizer
+      this.write(`var sizer ${$.msgpack}.Sizer
       ${msgpackSize(context, true, "response", operation.type)}`);
       this.write(`ua := make([]byte, sizer.Len());
-      encoder := msgpack.NewEncoder(ua);
+      encoder := ${$.msgpack}.NewEncoder(ua);
       ${msgpackEncode(context, true, "response", operation.type)}`);
       this.visitWrapperBeforeReturn(context);
       this.write(`return ua, nil\n`);

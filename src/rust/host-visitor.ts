@@ -1,8 +1,8 @@
-import { Context, Writer, BaseVisitor } from "@apexlang/core/model";
-import { fieldName, functionName } from "./helpers";
-import { formatComment, shouldIncludeHostCall } from "./utils";
-import * as utils from "@apexlang/codegen/utils";
-import { utils as rustUtils } from "@apexlang/codegen/rust";
+import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import { fieldName, functionName } from "./helpers.ts";
+import { formatComment, shouldIncludeHostCall } from "./utils/mod.ts";
+import * as utils from "../deps/codegen/utils.ts";
+import { utils as rustUtils } from "../deps/codegen/rust.ts";
 
 export class HostVisitor extends BaseVisitor {
   constructor(writer: Writer) {
@@ -51,22 +51,26 @@ impl ${className} {`);
     const operation = context.operation!;
     this.write(formatComment("  /// ", operation.description));
     this.write(`pub fn ${functionName(operation.name)}(&self`);
-    operation.parameters.map((param, index) => {
+    operation.parameters.map((param, _index) => {
       this.write(
-        `, ${fieldName(param.name)}: ${rustUtils.types.apexToRustType(
-          param.type,
-          context.config
-        )}`
+        `, ${fieldName(param.name)}: ${
+          rustUtils.types.apexToRustType(
+            param.type,
+            context.config,
+          )
+        }`,
       );
     });
     this.write(`) `);
     const retVoid = utils.isVoid(operation.type);
     if (!retVoid) {
       this.write(
-        `-> HandlerResult<${rustUtils.types.apexToRustType(
-          operation.type,
-          context.config
-        )}>`
+        `-> HandlerResult<${
+          rustUtils.types.apexToRustType(
+            operation.type,
+            context.config,
+          )
+        }>`,
       );
     } else {
       this.write(`-> HandlerResult<()>`);
@@ -92,7 +96,7 @@ host_call(
 )
 `);
     } else {
-      let params = operation.parameters.map((param) => fieldName(param.name));
+      const params = operation.parameters.map((param) => fieldName(param.name));
       this.write(`
 let input_args = ${rustUtils.rustifyCaps(operation.name)}Args{
   ${params.join(",")}
@@ -109,10 +113,12 @@ host_call(
     if (!retVoid) {
       this.write(`
         .map(|vec| {
-        wapc_codec::messagepack::deserialize::<${rustUtils.types.apexToRustType(
+        wapc_codec::messagepack::deserialize::<${
+        rustUtils.types.apexToRustType(
           operation.type,
-          context.config
-        )}>(vec.as_ref()).unwrap()
+          context.config,
+        )
+      }>(vec.as_ref()).unwrap()
       })\n`);
     } else {
       this.write(`.map(|_vec| ())\n`);

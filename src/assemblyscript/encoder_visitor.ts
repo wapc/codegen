@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor } from "@apexlang/core/model";
-import { encode, strQuote } from "./helpers";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { encode, strQuote } from "./helpers.ts";
 
 export class EncoderVisitor extends BaseVisitor {
   visitTypeFieldsBefore(context: Context): void {
     super.triggerTypeFieldsBefore(context);
     this.write(
       `  encode(encoder: Writer): void {
-    encoder.writeMapSize(${context.fields.length});\n`
+    encoder.writeMapSize(${context.fields.length});\n`,
     );
   }
 

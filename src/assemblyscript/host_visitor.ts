@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor } from "@apexlang/core/model";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
 import {
   camelCase,
   formatComment,
@@ -22,8 +22,8 @@ import {
   isProvider,
   isVoid,
   operationArgsType,
-} from "@apexlang/codegen/utils";
-import { expandType, read, strQuote, write } from "./helpers";
+} from "../deps/codegen/utils.ts";
+import { expandType, read, strQuote, write } from "./helpers.ts";
 
 export class HostVisitor extends BaseVisitor {
   visitOperation(context: Context): void {
@@ -64,41 +64,49 @@ export class HostVisitor extends BaseVisitor {
     this.write(`  `);
     if (operation.parameters.length == 0) {
       this.write(
-        `const result = hostCall(this.binding, ${strQuote(
-          context.namespace.name
-        )}, ${strQuote(operation.name)}, new ArrayBuffer(0));\n`
+        `const result = hostCall(this.binding, ${
+          strQuote(
+            context.namespace.name,
+          )
+        }, ${strQuote(operation.name)}, new ArrayBuffer(0));\n`,
       );
     } else if (operation.isUnary()) {
       const unaryParam = operation.parameters[0];
       if (isObject(unaryParam.type)) {
         this.write(
-          `const result = hostCall(this.binding, ${strQuote(
-            context.namespace.name
-          )}, ${strQuote(operation.name)}, ${
-            operation.unaryOp().name
-          }.toBuffer());\n`
+          `const result = hostCall(this.binding, ${
+            strQuote(
+              context.namespace.name,
+            )
+          }, ${
+            strQuote(operation.name)
+          }, ${operation.unaryOp().name}.toBuffer());\n`,
         );
       } else {
         this.write(`const sizer = new Sizer();
-        ${write(
-          "sizer",
-          "",
-          "",
-          unaryParam.name,
-          unaryParam.type,
-          false
-        )}const ua = new ArrayBuffer(sizer.length);
+        ${
+          write(
+            "sizer",
+            "",
+            "",
+            unaryParam.name,
+            unaryParam.type,
+            false,
+          )
+        }const ua = new ArrayBuffer(sizer.length);
         const encoder = new Encoder(ua);
         ${write("encoder", "", "", unaryParam.name, unaryParam.type, false)}`);
         this.write(
-          `const result = hostCall(this.binding, ${strQuote(
-            context.namespace.name
-          )}, ${strQuote(operation.name)}, ua);\n`
+          `const result = hostCall(this.binding, ${
+            strQuote(
+              context.namespace.name,
+            )
+          }, ${strQuote(operation.name)}, ua);\n`,
         );
       }
     } else {
       this.write(
-        `const inputArgs = new ${operationArgsType(iface, operation)};\n`
+        `const inputArgs = new ${operationArgsType(iface, operation)};\n`,
       );
       operation.parameters.map((param) => {
         const paramName = param.name;
@@ -122,10 +130,12 @@ export class HostVisitor extends BaseVisitor {
       if (isObject(operation.type)) {
         this.write(`    const decoder = new Decoder(result.get());\n`);
         this.write(
-          `    const ret = ${expandType(
-            operation.type,
-            false
-          )}.decode(decoder);\n`
+          `    const ret = ${
+            expandType(
+              operation.type,
+              false,
+            )
+          }.decode(decoder);\n`,
         );
         this.write(`if (decoder.error()) {
           return Result.error<${returnType}>(decoder.error()!)

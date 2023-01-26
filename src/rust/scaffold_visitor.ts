@@ -1,8 +1,8 @@
-import { Context, Writer, BaseVisitor } from "@apexlang/core/model";
-import { shouldIncludeHandler } from "./utils";
-import { functionName, mapArgs } from "./helpers";
-import * as utils from "@apexlang/codegen/utils";
-import { utils as rustUtils } from "@apexlang/codegen/rust";
+import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import { shouldIncludeHandler } from "./utils/mod.ts";
+import { functionName, mapArgs } from "./helpers.ts";
+import * as utils from "../deps/codegen/utils.ts";
+import { utils as rustUtils } from "../deps/codegen/rust.ts";
 
 export class ScaffoldVisitor extends BaseVisitor {
   constructor(writer: Writer) {
@@ -29,15 +29,17 @@ pub use ${useName}::*;\n\n`);
     const operation = context.operation!;
     this.write(`\n`);
     this.write(
-      `fn ${functionName(operation.name)}(${mapArgs(
-        operation.parameters,
-        context.config,
-        true
-      )}) -> HandlerResult<`
+      `fn ${functionName(operation.name)}(${
+        mapArgs(
+          operation.parameters,
+          context.config,
+          true,
+        )
+      }) -> HandlerResult<`,
     );
     if (!utils.isVoid(operation.type)) {
       this.write(
-        rustUtils.types.apexToRustType(operation.type, context.config)
+        rustUtils.types.apexToRustType(operation.type, context.config),
       );
     } else {
       this.write(`()`);
@@ -59,7 +61,7 @@ class HandlerRegistrationVisitor extends BaseVisitor {
     super(writer);
   }
 
-  visitAllOperationsBefore(context: Context): void {
+  visitAllOperationsBefore(_context: Context): void {
     this.write(`#[no_mangle]
 pub fn wapc_init() {\n`);
   }
@@ -70,13 +72,15 @@ pub fn wapc_init() {\n`);
     }
     const operation = context.operation!;
     this.write(
-      `    Handlers::register_${functionName(operation.name)}(${functionName(
-        operation.name
-      )});\n`
+      `    Handlers::register_${functionName(operation.name)}(${
+        functionName(
+          operation.name,
+        )
+      });\n`,
     );
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  visitAllOperationsAfter(_context: Context): void {
     this.write(`}\n`);
   }
 }

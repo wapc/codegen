@@ -14,21 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor } from "@apexlang/core/model";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
 import {
   isHandler,
   isObject,
   isVoid,
   operationArgsType,
-} from "@apexlang/codegen/utils";
+} from "../deps/codegen/utils.ts";
 import {
-  expandType,
-  size,
   encode,
+  expandType,
   mapArgs,
-  varAccessArg,
   read,
-} from "./helpers";
+  size,
+  varAccessArg,
+} from "./helpers.ts";
 
 export class WrappersVisitor extends BaseVisitor {
   visitOperation(context: Context): void {
@@ -37,7 +37,7 @@ export class WrappersVisitor extends BaseVisitor {
     }
     const { interface: iface, operation } = context;
     this.write(
-      `var ${operation.name}Handler: (${mapArgs(operation.parameters)}) => `
+      `var ${operation.name}Handler: (${mapArgs(operation.parameters)}) => `,
     );
     if (isVoid(operation.type)) {
       this.write(`Error | null;\n`);
@@ -45,15 +45,19 @@ export class WrappersVisitor extends BaseVisitor {
       this.write(`Result<${expandType(operation.type, true)}>;\n`);
     }
     this
-      .write(`function ${operation.name}Wrapper(payload: ArrayBuffer): Result<ArrayBuffer> {
-      const decoder = new Decoder(payload)\n`);
+      .write(
+        `function ${operation.name}Wrapper(payload: ArrayBuffer): Result<ArrayBuffer> {
+      const decoder = new Decoder(payload)\n`,
+      );
     if (operation.isUnary()) {
       const unaryParam = operation.parameters[0];
       if (isObject(unaryParam.type)) {
-        this.write(`const request = new ${expandType(
-          operation.unaryOp().type,
-          false
-        )}();
+        this.write(`const request = new ${
+          expandType(
+            operation.unaryOp().type,
+            false,
+          )
+        }();
       request.decode(decoder);\n`);
         this.write(isVoid(operation.type) ? "" : "const result = ");
         this.write(`${operation.name}Handler(request);\n`);
@@ -64,20 +68,24 @@ export class WrappersVisitor extends BaseVisitor {
       }
     } else {
       if (operation.parameters.length > 0) {
-        this.write(`const inputArgs = new ${operationArgsType(
-          iface,
-          operation
-        )};
+        this.write(`const inputArgs = new ${
+          operationArgsType(
+            iface,
+            operation,
+          )
+        };
         inputArgs.decode(decoder);
         if (decoder.error()) {
           return Result.error<ArrayBuffer>(decoder.error()!)
         }\n`);
       }
       this.write(
-        `const result = ${operation.name}Handler(${varAccessArg(
-          "inputArgs",
-          operation.parameters
-        )});\n`
+        `const result = ${operation.name}Handler(${
+          varAccessArg(
+            "inputArgs",
+            operation.parameters,
+          )
+        });\n`,
       );
       if (isVoid(operation.type)) {
         this.write(`if (result) {

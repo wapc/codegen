@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, Writer } from "@apexlang/core/model";
-import { ClassVisitor } from "./class_visitor";
-import { HostVisitor } from "./host_visitor";
-import { HandlersVisitor } from "./handlers_visitor";
-import { WrappersVisitor } from "./wrappers_visitor";
-import { BuilderVisitor } from "./builder_visitor";
-import { convertOperationToType } from "@apexlang/codegen/utils";
-import { expandType } from "./helpers";
+import { Context, Writer } from "../deps/core/model.ts";
+import { ClassVisitor } from "./class_visitor.ts";
+import { HostVisitor } from "./host_visitor.ts";
+import { HandlersVisitor } from "./handlers_visitor.ts";
+import { WrappersVisitor } from "./wrappers_visitor.ts";
+import { BuilderVisitor } from "./builder_visitor.ts";
+import { convertOperationToType } from "../deps/codegen/utils.ts";
+import { expandType } from "./helpers.ts";
 
 export class ModuleVisitor extends ClassVisitor {
   constructor(writer: Writer) {
@@ -32,7 +32,7 @@ export class ModuleVisitor extends ClassVisitor {
       (context: Context): void => {
         const host = new HostVisitor(writer);
         context.namespace.accept(context, host);
-      }
+      },
     );
     this.setCallback(
       "AllOperationsBefore",
@@ -40,7 +40,7 @@ export class ModuleVisitor extends ClassVisitor {
       (context: Context): void => {
         const handlers = new HandlersVisitor(this.writer);
         context.namespace.accept(context, handlers);
-      }
+      },
     );
     this.setCallback(
       "AllOperationsBefore",
@@ -48,13 +48,13 @@ export class ModuleVisitor extends ClassVisitor {
       (context: Context): void => {
         const wrappers = new WrappersVisitor(this.writer);
         context.namespace.accept(context, wrappers);
-      }
+      },
     );
   }
 
   visitNamespaceBefore(context: Context): void {
     this.write(
-      `import { Decoder, Writer, Encoder, Sizer, Codec } from "@wapc/as-msgpack";\n\n`
+      `import { Decoder, Writer, Encoder, Sizer, Codec } from "@wapc/as-msgpack";\n\n`,
     );
     super.triggerNamespaceBefore(context);
   }
@@ -62,7 +62,7 @@ export class ModuleVisitor extends ClassVisitor {
   visitAlias(context: Context): void {
     const { alias } = context;
     this.write(
-      `export type ${alias.name} = ${expandType(alias.type, false)}\n\n`
+      `export type ${alias.name} = ${expandType(alias.type, false)}\n\n`,
     );
   }
 
@@ -84,7 +84,7 @@ export class ModuleVisitor extends ClassVisitor {
   }
 
   visitTypeFieldsAfter(context: Context): void {
-    var { type } = context;
+    const { type } = context;
     super.visitTypeFieldsAfter(context);
     this.write(`\n`);
     this.write(`  static newBuilder(): ${type.name}Builder {

@@ -14,33 +14,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, BaseVisitor, Writer } from "@apexlang/core/model";
+import { Context, Writer } from "../deps/core/model.ts";
 import {
   camelCase,
-  isService,
   InterfaceUsesVisitor,
+  isService,
   UsesVisitor,
-} from "@apexlang/codegen/utils";
+} from "../deps/codegen/utils.ts";
+import { getImports, GoVisitor } from "../deps/codegen/go.ts";
 
-export class MainVisitor extends BaseVisitor {
+export class MainVisitor extends GoVisitor {
   // Overridable visitor implementations
   usesVisitor = (writer: Writer): UsesVisitor =>
     new InterfaceUsesVisitor(writer);
   uses: UsesVisitor | undefined = undefined;
 
+  writeHead(context: Context): void {
+    const prev = context.config.package;
+    context.config.package = "main";
+    super.writeHead(context);
+    context.config.package = prev;
+  }
+
   visitNamespaceBefore(context: Context): void {
-    const importPath =
-      context.config.import || "github.com/myorg/mymodule/pkg/module";
+    const prefixPkg = (context.config.prefixPkg || `pkg/`).replace(
+      /^\.\//g,
+      "",
+    );
+    const pkg = context.config.package || "module";
+    const module = context.config.module || "github.com/myorg/mymodule";
+    const importPath = context.config.import ||
+      `${module}/${prefixPkg}${pkg}`;
     super.visitNamespaceBefore(context);
 
     this.uses = this.usesVisitor(this.writer);
     context.namespace.accept(context, this.uses);
 
-    this.write(`package main
-
-    import (
-      "${importPath}"
-    )\n\n`);
+    getImports(context).firstparty(importPath);
   }
 
   visitAllOperationsBefore(context: Context): void {
@@ -51,9 +61,11 @@ export class MainVisitor extends BaseVisitor {
     this.write(`// Create providers\n`);
     this.uses!.dependencies.forEach((dependency) => {
       this.write(
-        `${camelCase(
-          dependency
-        )}Provider := ${packageName}.New${dependency}()\n`
+        `${
+          camelCase(
+            dependency,
+          )
+        }Provider := ${packageName}.New${dependency}()\n`,
       );
     });
 
@@ -63,9 +75,11 @@ export class MainVisitor extends BaseVisitor {
         .map((d) => camelCase(d) + "Provider")
         .join(", ");
       this.write(
-        `${camelCase(
-          service
-        )}Service := ${packageName}.New${service}(${deps})\n`
+        `${
+          camelCase(
+            service,
+          )
+        }Service := ${packageName}.New${service}(${deps})\n`,
       );
     });
 
@@ -76,7 +90,7 @@ export class MainVisitor extends BaseVisitor {
   }
 }
 
-class HandlerRegistrationVisitor extends BaseVisitor {
+class HandlerRegistrationVisitor extends GoVisitor {
   visitInterface(context: Context): void {
     if (!isService(context)) {
       return;
@@ -85,9 +99,11 @@ class HandlerRegistrationVisitor extends BaseVisitor {
     const { interface: iface } = context;
 
     this.write(
-      `\t\t${packageName}.Register${iface.name}(${camelCase(
-        iface.name
-      )}Service)\n`
+      `\t\t${packageName}.Register${iface.name}(${
+        camelCase(
+          iface.name,
+        )
+      }Service)\n`,
     );
   }
 }

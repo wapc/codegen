@@ -9,7 +9,13 @@ Make sure you have the Apex CLI installed. Here are [the instructions](https://a
 From your terminal, run:
 
 ```shell
-apex install @wapc/codegen
+apex install https://deno.land/x/wapc_codegen/templates.ts
+```
+
+```shell
+INFO Installing @wapc/assemblyscript...
+INFO Installing @wapc/rust...
+INFO Installing @wapc/tinygo...
 ```
 
 Now you should see waPC project templates available.
@@ -19,14 +25,12 @@ apex list templates
 ```
 
 ```
-+-----------------------+-------------------------------------+
-| NAME                  | DESCRIPTION                         |
-+-----------------------+-------------------------------------+
-| ...                   | ...                                 |
-| @wapc/assemblyscript  | AssemblyScript waPC module project  |
-| @wapc/tinygo          | TinyGo waPC module project          |
-| @wapc/rust            | Rust waPC module project          |
-+-----------------------+-------------------------------------+
+┌──────────────────────┬────────────────────────────────────┐
+│ Name                 │ Description                        │
+└──────────────────────┴────────────────────────────────────┘
+  @wapc/assemblyscript   AssemblyScript waPC module project
+  @wapc/rust             TinyGo waPC module project
+  @wapc/tinygo           TinyGo waPC module project
 ```
 
 To create a new TinyGo waPC module, run:
@@ -34,7 +38,7 @@ To create a new TinyGo waPC module, run:
 ```shell
 apex new @wapc/tinygo hello-world
 cd hello-world
-make
+apex all
 ls -l build
 ```
 

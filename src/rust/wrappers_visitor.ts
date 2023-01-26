@@ -1,8 +1,8 @@
-import { Context, Writer, BaseVisitor } from "@apexlang/core/model";
-import { varAccessArg, functionName } from "./helpers";
-import { shouldIncludeHandler } from "./utils";
-import * as utils from "@apexlang/codegen/utils";
-import { utils as rustUtils } from "@apexlang/codegen/rust";
+import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import { functionName, varAccessArg } from "./helpers.ts";
+import { shouldIncludeHandler } from "./utils/mod.ts";
+import * as utils from "../deps/codegen/utils.ts";
+import { utils as rustUtils } from "../deps/codegen/rust.ts";
 
 export class WrapperVarsVisitor extends BaseVisitor {
   constructor(writer: Writer) {
@@ -55,7 +55,7 @@ export class WrapperFuncsVisitor extends BaseVisitor {
     if (operation.isUnary()) {
       inputType = rustUtils.types.apexToRustType(
         operation.unaryOp().type,
-        context.config
+        context.config,
       );
       inputArgs = "input";
     } else {

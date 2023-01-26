@@ -5,12 +5,12 @@ import {
   Type,
   TypeResolver,
   Writer,
-} from "@apexlang/core/model";
-import { HandlersVisitor } from "./handlers_visitor";
-import { HostVisitor } from "./host-visitor";
-import { WrapperFuncsVisitor, WrapperVarsVisitor } from "./wrappers_visitor";
-import { utils as rustUtils, visitors } from "@apexlang/codegen/rust";
-import * as ast from "@apexlang/core/ast";
+} from "../deps/core/model.ts";
+import { HandlersVisitor } from "./handlers_visitor.ts";
+import { HostVisitor } from "./host-visitor.ts";
+import { WrapperFuncsVisitor, WrapperVarsVisitor } from "./wrappers_visitor.ts";
+import { utils as rustUtils, visitors } from "../deps/codegen/rust.ts";
+import * as ast from "../deps/core/ast.ts";
 
 export class IntegrationVisitor extends BaseVisitor {
   constructor(writer: Writer) {
@@ -21,7 +21,7 @@ export class IntegrationVisitor extends BaseVisitor {
       (context: Context): void => {
         const host = new HostVisitor(writer);
         context.accept(context, host);
-      }
+      },
     );
     this.setCallback(
       "AllOperationsBefore",
@@ -29,7 +29,7 @@ export class IntegrationVisitor extends BaseVisitor {
       (context: Context): void => {
         const handlers = new HandlersVisitor(this.writer);
         context.accept(context, handlers);
-      }
+      },
     );
     this.setCallback(
       "AllOperationsBefore",
@@ -39,7 +39,7 @@ export class IntegrationVisitor extends BaseVisitor {
         context.accept(context, wrapperVars);
         const wrapperFuncs = new WrapperFuncsVisitor(this.writer);
         context.accept(context, wrapperFuncs);
-      }
+      },
     );
     this.setCallback(
       "OperationAfter",
@@ -51,11 +51,11 @@ export class IntegrationVisitor extends BaseVisitor {
         }
         const type = this.convertOperationToType(
           context.getType.bind(this),
-          operation
+          operation,
         );
         const struct = new visitors.StructVisitor(type, context);
         this.write(struct.toString());
-      }
+      },
     );
     this.setCallback("Type", "struct", (context: Context): void => {
       const struct = new visitors.StructVisitor(context.type, context);
@@ -75,14 +75,14 @@ use wapc_guest::prelude::*;\n\n`);
   }
 
   private convertOperationToType(tr: TypeResolver, operation: Operation): Type {
-    var fields = operation.parameters.map((param) => {
+    const fields = operation.parameters.map((param) => {
       return new ast.FieldDefinition(
         undefined,
         param.node.name,
         param.node.description,
         param.node.type,
         param.node.default,
-        param.node.annotations
+        param.node.annotations,
       );
     });
     return new Type(
@@ -91,13 +91,13 @@ use wapc_guest::prelude::*;\n\n`);
         operation.node.loc,
         new ast.Name(
           operation.node.name.loc,
-          rustUtils.rustifyCaps(operation.name) + "Args"
+          rustUtils.rustifyCaps(operation.name) + "Args",
         ),
         undefined,
         [],
         operation.annotations.map((a) => a.node),
-        fields
-      )
+        fields,
+      ),
     );
   }
 }

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { capitalize, isHandler, isVoid } from "@apexlang/codegen/utils";
-import { Context, BaseVisitor } from "@apexlang/core/model";
-import { expandType, mapArgs, defaultValueForType } from "./helpers";
+import { capitalize, isHandler, isVoid } from "../deps/codegen/utils.ts";
+import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { defaultValueForType, expandType, mapArgs } from "./helpers.ts";
 
 export class ScaffoldVisitor extends BaseVisitor {
   visitNamespaceBefore(context: Context): void {
@@ -45,9 +45,8 @@ export class ScaffoldVisitor extends BaseVisitor {
     }
     this.write(` {\n`);
     if (!isVoid(operation.type)) {
-      const dv = defaultValueForType(operation.type);
       this.write(
-        `  return Result.error<${expanded}>(new Error("not implemented"));\n`
+        `  return Result.error<${expanded}>(new Error("not implemented"));\n`,
       );
     } else {
       this.write(`return null\n`);
@@ -55,12 +54,13 @@ export class ScaffoldVisitor extends BaseVisitor {
     this.write(`}\n`);
   }
 
-  visitNamespaceAfter(context: Context): void {
+  visitNamespaceAfter(_context: Context): void {
     this.write(`\n`);
     this.write(`// Boilerplate code for waPC.  Do not remove.\n\n`);
     this.write(`import { handleCall, handleAbort } from "@wapc/as-guest";\n\n`);
     this
-      .write(`export function __guest_call(operation_size: usize, payload_size: usize): bool {
+      .write(
+        `export function __guest_call(operation_size: usize, payload_size: usize): bool {
   return handleCall(operation_size, payload_size);
 }
 
@@ -72,12 +72,13 @@ function abort(
   columnNumber: u32
 ): void {
   handleAbort(message, fileName, lineNumber, columnNumber);
-}\n`);
+}\n`,
+      );
   }
 }
 
 class HandlerRegistrationVisitor extends BaseVisitor {
-  visitAllOperationsBefore(context: Context): void {
+  visitAllOperationsBefore(_context: Context): void {
     this.write(`export function wapc_init(): void {\n`);
   }
 
@@ -87,18 +88,18 @@ class HandlerRegistrationVisitor extends BaseVisitor {
     }
     const { operation } = context;
     this.write(
-      `  Handlers.register${capitalize(operation.name)}(${operation.name});\n`
+      `  Handlers.register${capitalize(operation.name)}(${operation.name});\n`,
     );
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  visitAllOperationsAfter(_context: Context): void {
     this.write(`}\n`);
   }
 }
 
 class TypesVisitor extends BaseVisitor {
-  hasOperations: boolean = false;
-  hasObjects: boolean = false;
+  hasOperations = false;
+  hasObjects = false;
 
   visitOperation(context: Context): void {
     if (isHandler(context)) {

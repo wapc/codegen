@@ -15,31 +15,32 @@ limitations under the License.
 */
 
 import {
-  Context,
-  Writer,
   BaseVisitor,
-  Optional,
-  Named,
+  Context,
   Kind,
-} from "@apexlang/core/model";
+  Named,
+  Optional,
+  Writer,
+} from "../deps/core/model.ts";
 import {
-  expandType,
-  parameterName,
-  fieldName,
   defaultValueForType,
-  translateAlias,
-  returnPointer,
-  msgpackRead,
+  expandType,
+  fieldName,
+  getImporter,
   msgpackCodecFuncs,
-} from "@apexlang/codegen/go";
+  msgpackRead,
+  parameterName,
+  returnPointer,
+  translateAlias,
+} from "../deps/codegen/go.ts";
 import {
   capitalize,
-  isVoid,
-  isObject,
   formatComment,
+  isObject,
   isProvider,
-  uncapitalize,
-} from "@apexlang/codegen/utils";
+  isVoid,
+} from "../deps/codegen/utils.ts";
+import { IMPORTS } from "./constants.ts";
 
 export class HostVisitor extends BaseVisitor {
   constructor(writer: Writer) {
@@ -50,8 +51,8 @@ export class HostVisitor extends BaseVisitor {
     if (!isProvider(context)) {
       return;
     }
-    const ns = context.namespace;
-    const { interface: iface, operation } = context;
+    const { namespace: ns, interface: iface, operation } = context;
+    const $ = getImporter(context, IMPORTS);
     const tr = translateAlias(context);
     this.write(`type ${iface.name}Impl struct {
 \tbinding string
@@ -70,31 +71,37 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
 
     this.write(formatComment("    // ", operation.description));
     this.write(
-      `func (h *${iface.name}Impl) ${capitalize(
-        operation.name
-      )}(ctx context.Context`
+      `func (h *${iface.name}Impl) ${
+        capitalize(
+          operation.name,
+        )
+      }(ctx ${$.context}.Context`,
     );
-    operation.parameters.map((param, index) => {
+    operation.parameters.map((param, _index) => {
       this.write(`, `);
       this.write(
-        `${parameterName(param, param.name)} ${expandType(
-          param.type,
-          undefined,
-          true,
-          tr
-        )}`
+        `${parameterName(param, param.name)} ${
+          expandType(
+            param.type,
+            undefined,
+            true,
+            tr,
+          )
+        }`,
       );
     });
     this.write(`) `);
     const retVoid = isVoid(operation.type);
     if (!retVoid) {
       this.write(
-        `(${returnPointer(operation.type)}${expandType(
-          operation.type,
-          undefined,
-          false,
-          tr
-        )}, error)`
+        `(${returnPointer(operation.type)}${
+          expandType(
+            operation.type,
+            undefined,
+            false,
+            tr,
+          )
+        }, error)`,
       );
     } else {
       this.write(`error`);
@@ -104,10 +111,9 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
     let defaultVal = "";
     let defaultValWithComma = "";
     if (!retVoid) {
-      defaultVal =
-        operation.type.kind == Kind.Type
-          ? "nil"
-          : defaultValueForType(context, operation.type);
+      defaultVal = operation.type.kind == Kind.Type
+        ? "nil"
+        : defaultValueForType(context, operation.type);
       defaultValWithComma = defaultVal + ", ";
     }
     if (operation.parameters.length == 0) {
@@ -117,18 +123,20 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
         this.write(`_, err := `);
       }
       this.write(
-        `wapc.HostCall(h.binding, "${ns.name}.${iface.name}", "${operation.name}", []byte{})\n`
+        `${$.wapc}.HostCall(h.binding, "${ns.name}.${iface.name}", "${operation.name}", []byte{})\n`,
       );
     } else if (operation.isUnary()) {
       const unaryParam = operation.unaryOp();
       if (isObject(unaryParam.type)) {
-        this.write(`inputBytes, err := msgpack.ToBytes(&${unaryParam.name})\n`);
+        this.write(
+          `inputBytes, err := ${$.msgpack}.ToBytes(&${unaryParam.name})\n`,
+        );
       } else {
         const codecFunc = msgpackCodecFuncs.get(
-          (unaryParam.type as Named).name
+          (unaryParam.type as Named).name,
         );
         this.write(
-          `inputBytes, err := msgpack.${codecFunc}(${unaryParam.name})\n`
+          `inputBytes, err := ${$.msgpack}.${codecFunc}(${unaryParam.name})\n`,
         );
       }
       this.write(`if err != nil {
@@ -140,26 +148,30 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
         this.write(`_, err = `);
       }
       this.write(
-        `wapc.HostCall(h.binding, "${ns.name}.${iface.name}", "${operation.name}", inputBytes)\n`
+        `${$.wapc}.HostCall(h.binding, "${ns.name}.${iface.name}", "${operation.name}", inputBytes)\n`,
       );
     } else {
       this.write(
-        `inputArgs := ${capitalize(iface.name)}${fieldName(
-          operation,
-          operation.name
-        )}Args{\n`
+        `inputArgs := ${capitalize(iface.name)}${
+          fieldName(
+            operation,
+            operation.name,
+          )
+        }Args{\n`,
       );
       operation.parameters.map((param) => {
         const paramName = param.name;
         this.write(
-          `  ${fieldName(param, paramName)}: ${parameterName(
-            param,
-            paramName
-          )},\n`
+          `  ${fieldName(param, paramName)}: ${
+            parameterName(
+              param,
+              paramName,
+            )
+          },\n`,
         );
       });
       this.write(`}\n`);
-      this.write(`inputBytes, err := msgpack.ToBytes(&inputArgs)
+      this.write(`inputBytes, err := ${$.msgpack}.ToBytes(&inputArgs)
       if err != nil {
         return ${defaultValWithComma}err
       }\n`);
@@ -168,7 +180,7 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
       } else {
         this.write(`_, err = `);
       }
-      this.write(`wapc.HostCall(
+      this.write(`${$.wapc}.HostCall(
       h.binding,
       "${ns.name}.${iface.name}",
       "${operation.name}",
@@ -179,34 +191,38 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
       this.write(`if err != nil {
         return ${defaultValWithComma}err
       }\n`);
-      this.write(`decoder := msgpack.NewDecoder(payload)\n`);
+      this.write(`decoder := ${$.msgpack}.NewDecoder(payload)\n`);
       if (isObject(operation.type)) {
         this.write(
-          `return msgpack.DecodeNillable[${expandType(
-            operation.type,
-            undefined,
-            false,
-            tr
-          )}](&decoder)\n`
+          `return ${$.msgpack}.DecodeNillable[${
+            expandType(
+              operation.type,
+              undefined,
+              false,
+              tr,
+            )
+          }](&decoder)\n`,
         );
       } else {
-        var resultVar = "";
+        let resultVar = "";
         if (operation.type instanceof Optional) {
           resultVar = "result";
           this.write(
-            `var result ${expandType(operation.type, undefined, true, tr)}\n`
+            `var result ${expandType(operation.type, undefined, true, tr)}\n`,
           );
         }
         this.write(
-          `${msgpackRead(
-            context,
-            true,
-            resultVar,
-            true,
-            defaultVal,
-            operation.type,
-            false
-          )}`
+          `${
+            msgpackRead(
+              context,
+              true,
+              resultVar,
+              true,
+              defaultVal,
+              operation.type,
+              false,
+            )
+          }`,
         );
         if (resultVar != "") {
           this.write(`return ${resultVar}, err\n`);
