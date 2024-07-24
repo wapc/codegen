@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BaseVisitor, Context } from "../deps/core/model.ts";
-import { formatComment } from "../deps/codegen/utils.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
+import { formatComment } from "../../deps/@apexlang/codegen/utils/mod.ts";
 import { defValue, expandType } from "./helpers.ts";
 import { DecoderVisitor } from "./decoder_visitor.ts";
 import { EncoderVisitor } from "./encoder_visitor.ts";
 
 export class ClassVisitor extends BaseVisitor {
-  visitTypeBefore(context: Context): void {
+  override visitTypeBefore(context: Context): void {
     super.triggerTypeBefore(context);
     const { type } = context;
     this.write(formatComment("// ", type.description));
     this.write(`export class ${type.name} implements Codec {\n`);
   }
 
-  visitTypeField(context: Context): void {
+  override visitTypeField(context: Context): void {
     const { field } = context;
     this.write(formatComment("  // ", field.description));
     this.write(
@@ -42,7 +42,7 @@ export class ClassVisitor extends BaseVisitor {
     super.triggerTypeField(context);
   }
 
-  visitTypeFieldsAfter(context: Context): void {
+  override visitTypeFieldsAfter(context: Context): void {
     const { type } = context;
     this.write(`\n`);
     const decoder = new DecoderVisitor(this.writer);
@@ -63,7 +63,7 @@ export class ClassVisitor extends BaseVisitor {
     super.triggerTypeFieldsAfter(context);
   }
 
-  visitTypeAfter(context: Context): void {
+  override visitTypeAfter(context: Context): void {
     this.write(`}\n\n`);
     super.triggerTypeAfter(context);
   }

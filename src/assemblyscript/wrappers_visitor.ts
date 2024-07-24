@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
 import {
   isHandler,
   isObject,
   isVoid,
   operationArgsType,
-} from "../deps/codegen/utils.ts";
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
 import {
   encode,
   expandType,
@@ -31,22 +31,28 @@ import {
 } from "./helpers.ts";
 
 export class WrappersVisitor extends BaseVisitor {
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isHandler(context)) {
       return;
     }
     const { interface: iface, operation } = context;
     this.write(
-      `var ${operation.name}Handler: (${mapArgs(operation.parameters)}) => `,
+      `type __${operation.name}Fn = (${mapArgs(operation.parameters)}) => `,
     );
     if (isVoid(operation.type)) {
       this.write(`Error | null;\n`);
     } else {
       this.write(`Result<${expandType(operation.type, true)}>;\n`);
     }
+    this.write(
+      `var ${operation.name}Handler:  __${operation.name}Fn | null;\n`,
+    );
     this
       .write(
         `function ${operation.name}Wrapper(payload: ArrayBuffer): Result<ArrayBuffer> {
+      if (${operation.name}Handler === null) {
+        return Result.error<ArrayBuffer>(new Error("not implemented"));
+      }
       const decoder = new Decoder(payload)\n`,
       );
     if (operation.isUnary()) {

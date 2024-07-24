@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import {
   formatComment,
   isHandler,
   isVoid,
-} from "../deps/codegen/utils.ts";
-import { BaseVisitor, Context } from "../deps/core/model.ts";
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
 import { expandType, mapArg, mapArgs } from "./helpers.ts";
 
 export class HandlersVisitor extends BaseVisitor {
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isHandler(context)) {
       return;
     }
@@ -60,7 +60,7 @@ export class HandlersVisitor extends BaseVisitor {
     super.triggerOperation(context);
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  override visitAllOperationsAfter(context: Context): void {
     if (context.config.handlerPreamble == true) {
       this.write(`}\n\n`);
       delete context.config.handlerPreamble;

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import {
   Named,
   Optional,
   Writer,
-} from "../deps/core/model.ts";
+} from "../../deps/@apexlang/core/model/mod.ts";
 import {
   defaultValueForType,
   expandType,
@@ -32,14 +32,14 @@ import {
   parameterName,
   returnPointer,
   translateAlias,
-} from "../deps/codegen/go.ts";
+} from "../../deps/@apexlang/codegen/go/mod.ts";
 import {
   capitalize,
   formatComment,
   isObject,
   isProvider,
   isVoid,
-} from "../deps/codegen/utils.ts";
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
 import { IMPORTS } from "./constants.ts";
 
 export class HostVisitor extends BaseVisitor {
@@ -47,7 +47,7 @@ export class HostVisitor extends BaseVisitor {
     super(writer);
   }
 
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isProvider(context)) {
       return;
     }
@@ -235,7 +235,7 @@ func New${iface.name}(binding ...string) *${iface.name}Impl {
     super.triggerOperation(context);
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  override visitAllOperationsAfter(context: Context): void {
     super.triggerAllOperationsAfter(context);
   }
 }

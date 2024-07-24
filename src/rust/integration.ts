@@ -5,12 +5,15 @@ import {
   Type,
   TypeResolver,
   Writer,
-} from "../deps/core/model.ts";
+} from "../../deps/@apexlang/core/model/mod.ts";
 import { HandlersVisitor } from "./handlers_visitor.ts";
 import { HostVisitor } from "./host-visitor.ts";
 import { WrapperFuncsVisitor, WrapperVarsVisitor } from "./wrappers_visitor.ts";
-import { utils as rustUtils, visitors } from "../deps/codegen/rust.ts";
-import * as ast from "../deps/core/ast.ts";
+import {
+  utils as rustUtils,
+  visitors,
+} from "../../deps/@apexlang/codegen/rust/mod.ts";
+import * as ast from "../../deps/@apexlang/core/ast/mod.ts";
 
 export class IntegrationVisitor extends BaseVisitor {
   constructor(writer: Writer) {
@@ -63,14 +66,14 @@ export class IntegrationVisitor extends BaseVisitor {
     });
   }
 
-  visitContextBefore(context: Context): void {
+  override visitContextBefore(context: Context): void {
     this.write(`
 #[cfg(feature = "guest")]
 use wapc_guest::prelude::*;\n\n`);
     super.triggerContextBefore(context);
   }
 
-  visitContextAfter(context: Context): void {
+  override visitContextAfter(context: Context): void {
     super.triggerContextAfter(context);
   }
 

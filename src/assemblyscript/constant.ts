@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export const translations = new Map<string, string>([
+export const translations: Map<string, string> = new Map<string, string>([
   ["ID", "string"],
   ["bytes", "ArrayBuffer"],
 ]);
 
-export const primitives = new Set([
+export const primitives: Set<string> = new Set([
   "bool",
   "i8",
   "i16",
@@ -35,7 +35,7 @@ export const primitives = new Set([
   "bytes",
 ]);
 
-export const decodeFuncs = new Map<string, string>([
+export const decodeFuncs: Map<string, string> = new Map<string, string>([
   ["ID", "readString"],
   ["bool", "readBool"],
   ["string", "readString"],
@@ -52,7 +52,7 @@ export const decodeFuncs = new Map<string, string>([
   ["bytes", "readByteArray"],
 ]);
 
-export const encodeFuncs = new Map<string, string>([
+export const encodeFuncs: Map<string, string> = new Map<string, string>([
   ["ID", "writeString"],
   ["bool", "writeBool"],
   ["string", "writeString"],

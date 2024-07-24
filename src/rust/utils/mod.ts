@@ -1,4 +1,4 @@
-import { Context } from "../../deps/core/model.ts";
+import { Context } from "../../../deps/@apexlang/core/model/mod.ts";
 
 export function shouldIncludeHostCall(context: Context): boolean {
   const interfaces = context.config.hostInterfaces as Array<string>;

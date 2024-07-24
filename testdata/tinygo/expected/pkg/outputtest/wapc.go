@@ -14,12 +14,6 @@ import (
 	"github.com/wapc/wapc-guest-tinygo"
 )
 
-type ns struct{}
-
-func (n *ns) Namespace() string {
-	return "apex.testing"
-}
-
 type MyService interface {
 	EmptyVoid(ctx context.Context) error
 	UnaryType(ctx context.Context, value *MyType) (*MyType, error)
@@ -60,7 +54,6 @@ type Repository interface {
 
 // MyType is a class
 type MyType struct {
-	ns
 	// same type value
 	SameValue *MyType `json:"sameValue,omitempty" yaml:"sameValue,omitempty" msgpack:"sameValue,omitempty"`
 	// type value
@@ -139,18 +132,20 @@ type MyType struct {
 	AliasOption *uuid.UUID `json:"aliasOption,omitempty" yaml:"aliasOption,omitempty" msgpack:"aliasOption,omitempty"`
 }
 
-func (m *MyType) Type() string {
-	return "MyType"
+// DefaultMyType returns a `MyType` struct populated with its default values.
+func DefaultMyType() MyType {
+	return MyType{}
 }
 
 type MyOtherType struct {
-	ns
 	Foo string `json:"foo" yaml:"foo" msgpack:"foo"`
 	Bar string `json:"bar" yaml:"bar" msgpack:"bar"`
 }
 
-func (m *MyOtherType) Type() string {
-	return "MyOtherType"
+// DefaultMyOtherType returns a `MyOtherType` struct populated with its default
+// values.
+func DefaultMyOtherType() MyOtherType {
+	return MyOtherType{}
 }
 
 type MyUnion struct {
@@ -183,10 +178,6 @@ var toIDMyEnum = map[string]MyEnum{
 	"three": MyEnumThree,
 }
 
-func (e MyEnum) Type() string {
-	return "MyEnum"
-}
-
 func (e MyEnum) String() string {
 	str, ok := toStringMyEnum[e]
 	if !ok {
@@ -216,6 +207,21 @@ func (e *MyEnum) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
+	return e.FromString(str)
+}
+
+// MarshalYAML marshals the enum as a YAML string
+func (e MyEnum) MarshalYAML() (any, error) {
+	return e.String(), nil
+}
+
+// UnmarshalYAML unmashals a quoted YAML string to the enum value
+func (e *MyEnum) UnmarshalYAML(unmarshal func(any) error) error {
+	var str string
+	if err := unmarshal(&str); err != nil {
+		return err
+	}
+
 	return e.FromString(str)
 }
 

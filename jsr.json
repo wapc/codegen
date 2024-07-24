@@ -1,0 +1,37 @@
+{
+  "name": "@wapc/codegen",
+  "version": "0.0.6",
+  "description": "Code generators for waPC using Apex.",
+  "keywords": ["wapc", "apex", "idl", "codegen"],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://www.github.com/wapc/codegen"
+  },
+  "bugs": {
+    "url": "https://www.github.com/wapc/codegen/issues"
+  },
+  "exports": {
+    ".": "./templates/mod.ts",
+    "./assemblyscript": "./src/assemblyscript/mod.ts",
+    "./rust": "./src/rust/mod.ts",
+    "./tinygo": "./src/tinygo/mod.ts",
+    "./templates": "./templates/mod.ts",
+    "./templates/assemblyscript": "./templates/assemblyscript/mod.ts",
+    "./templates/rust": "./templates/rust/mod.ts",
+    "./templates/tinygo": "./templates/tinygo/mod.ts",
+    "./plugins/assemblyscript": "./src/assemblyscript/plugin.ts",
+    "./plugins/rust": "./src/rust/plugin.ts",
+    "./plugins/tinygo": "./src/tinygo/plugin.ts"
+  },
+  "publish": {
+    "include": [
+      "LICENSE",
+      "README.md",
+      "templates",
+      "deps/**/*.ts",
+      "src/**/*.ts"
+    ],
+    "exclude": ["src/tests"]
+  }
+}

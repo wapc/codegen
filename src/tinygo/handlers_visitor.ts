@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context } from "../deps/core/model.ts";
+import { Context } from "../../deps/@apexlang/core/model/mod.ts";
 import {
   expandType,
   getImporter,
@@ -22,18 +22,18 @@ import {
   mapParam,
   mapParams,
   translateAlias,
-} from "../deps/codegen/go.ts";
+} from "../../deps/@apexlang/codegen/go/mod.ts";
 import {
   capitalize,
   formatComment,
   isService,
   isVoid,
   uncapitalize,
-} from "../deps/codegen/utils.ts";
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
 import { IMPORTS } from "./constants.ts";
 
 export class HandlersVisitor extends GoVisitor {
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isService(context)) {
       return;
     }
@@ -63,7 +63,7 @@ export class HandlersVisitor extends GoVisitor {
     super.triggerOperation(context);
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  override visitAllOperationsAfter(context: Context): void {
     if (context.config.handlerPreamble == true) {
       this.write(`}\n\n`);
     }
@@ -72,7 +72,7 @@ export class HandlersVisitor extends GoVisitor {
 }
 
 export class RegisterVisitor extends GoVisitor {
-  visitInterfaceBefore(context: Context): void {
+  override visitInterfaceBefore(context: Context): void {
     if (!isService(context)) {
       return;
     }
@@ -82,7 +82,7 @@ export class RegisterVisitor extends GoVisitor {
     );
   }
 
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isService(context)) {
       return;
     }
@@ -100,7 +100,7 @@ export class RegisterVisitor extends GoVisitor {
     super.triggerOperation(context);
   }
 
-  visitInterfaceAfter(context: Context): void {
+  override visitInterfaceAfter(context: Context): void {
     if (!isService(context)) {
       return;
     }

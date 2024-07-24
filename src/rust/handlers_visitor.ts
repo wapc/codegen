@@ -1,16 +1,21 @@
-import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import {
+  BaseVisitor,
+  Context,
+  Writer,
+} from "../../deps/@apexlang/core/model/mod.ts";
 import { functionName } from "./helpers.ts";
-import { formatComment, shouldIncludeHandler } from "./utils/mod.ts";
-import * as utils from "../deps/codegen/utils.ts";
-import { utils as rustUtils } from "../deps/codegen/rust.ts";
+import { formatComment } from "./utils/mod.ts";
+import * as utils from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { utils as rustUtils } from "../../deps/@apexlang/codegen/rust/mod.ts";
+import { isService } from "../../deps/@apexlang/codegen/utils/mod.ts";
 
 export class HandlersVisitor extends BaseVisitor {
   constructor(writer: Writer) {
     super(writer);
   }
 
-  visitOperation(context: Context): void {
-    if (!shouldIncludeHandler(context)) {
+  override visitOperation(context: Context): void {
+    if (!isService(context)) {
       return;
     }
     if (context.config.handlerPreamble != true) {
@@ -24,9 +29,9 @@ impl ${className} {
 `);
       context.config.handlerPreamble = true;
     }
-    const operation = context.operation!;
+    const { namespace, operation, interface: iface } = context;
     this.write(formatComment("    /// ", operation.description));
-    const opName = operation.name;
+    const opName = namespace.name + "." + iface.name + "/" + operation.name;
     const fnName = functionName(operation.name);
     const paramTypes = operation.parameters
       .map((param) =>
@@ -45,7 +50,7 @@ pub fn register_${fnName}(f: fn(${paramTypes}) -> HandlerResult<${returnType}>) 
     super.triggerOperation(context);
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  override visitAllOperationsAfter(context: Context): void {
     if (context.config.handlerPreamble == true) {
       this.write(`}\n\n`);
       delete context.config.handlerPreamble;

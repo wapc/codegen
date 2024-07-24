@@ -1,15 +1,11 @@
-import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
-import { shouldIncludeHandler } from "./utils/mod.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
 import { functionName, mapArgs } from "./helpers.ts";
-import * as utils from "../deps/codegen/utils.ts";
-import { utils as rustUtils } from "../deps/codegen/rust.ts";
+import * as utils from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { utils as rustUtils } from "../../deps/@apexlang/codegen/rust/mod.ts";
+import { isService } from "../../deps/@apexlang/codegen/utils/mod.ts";
 
 export class ScaffoldVisitor extends BaseVisitor {
-  constructor(writer: Writer) {
-    super(writer);
-  }
-
-  visitContextBefore(context: Context): void {
+  override visitContextBefore(context: Context): void {
     const useName = context.config["use"] || "generated";
     super.visitContextBefore(context);
     this.write(`mod ${useName};
@@ -17,13 +13,13 @@ use wapc_guest::prelude::*;
 pub use ${useName}::*;\n\n`);
   }
 
-  visitAllOperationsBefore(context: Context): void {
+  override visitAllOperationsBefore(context: Context): void {
     const registration = new HandlerRegistrationVisitor(this.writer);
     context.accept(context, registration);
   }
 
-  visitOperation(context: Context): void {
-    if (!shouldIncludeHandler(context)) {
+  override visitOperation(context: Context): void {
+    if (!isService(context)) {
       return;
     }
     const operation = context.operation!;
@@ -57,17 +53,13 @@ pub use ${useName}::*;\n\n`);
 }
 
 class HandlerRegistrationVisitor extends BaseVisitor {
-  constructor(writer: Writer) {
-    super(writer);
-  }
-
-  visitAllOperationsBefore(_context: Context): void {
+  override visitAllOperationsBefore(_context: Context): void {
     this.write(`#[no_mangle]
 pub fn wapc_init() {\n`);
   }
 
-  visitOperation(context: Context): void {
-    if (!shouldIncludeHandler(context)) {
+  override visitOperation(context: Context): void {
+    if (!isService(context)) {
       return;
     }
     const operation = context.operation!;
@@ -80,7 +72,7 @@ pub fn wapc_init() {\n`);
     );
   }
 
-  visitAllOperationsAfter(_context: Context): void {
+  override visitAllOperationsAfter(_context: Context): void {
     this.write(`}\n`);
   }
 }

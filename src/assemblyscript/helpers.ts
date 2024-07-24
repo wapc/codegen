@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { capitalize } from "../deps/codegen/utils.ts";
+import { capitalize } from "../../deps/@apexlang/codegen/utils/mod.ts";
 import {
   Alias,
   AnyType,
@@ -28,7 +28,7 @@ import {
   Optional,
   Parameter,
   Primitive,
-} from "../deps/core/model.ts";
+} from "../../deps/@apexlang/core/model/mod.ts";
 import {
   decodeFuncs,
   encodeFuncs,
@@ -168,9 +168,9 @@ export function defaultValueForType(type: AnyType): string {
  * returns string in quotes
  * @param s string to have quotes
  */
-export const strQuote = (s: string) => {
+export function strQuote(s: string): string {
   return `\"${s}\"`;
-};
+}
 
 /**
  * returns string of the expanded type of a node
