@@ -1,8 +1,6 @@
-import {
-  Configuration,
-  TaskDefinition,
-} from "https://deno.land/x/apex_cli@v0.0.15/src/config.ts";
-import * as apex from "../deps/core/mod.ts";
+import * as ast from "../../deps/@apexlang/core/ast/mod.ts";
+import { Configuration } from "../../deps/@apexlang/apex/config/mod.ts";
+import { TaskConfig } from "../../deps/@apexlang/apex/task/mod.ts";
 
 interface Alias {
   type: string;
@@ -26,19 +24,19 @@ function taskName(taskExpr: string): string {
 }
 
 export default function (
-  doc: apex.ast.Document,
+  doc: ast.Document,
   config: Configuration,
 ): Configuration {
   config.config ||= {};
   config.config.aliases ||= {};
   config.generates ||= {};
 
-  const interfaces = doc.definitions
-    .filter((d) => d.isKind(apex.ast.Kind.InterfaceDefinition))
-    .map((d) => d as apex.ast.InterfaceDefinition);
+  const interfaces: ast.InterfaceDefinition[] = doc.definitions
+    .filter((d) => d.isKind(ast.Kind.InterfaceDefinition))
+    .map((d) => d as ast.InterfaceDefinition);
 
   const hasServices = interfaces
-    .find((i) => {
+    .find((i: ast.InterfaceDefinition) => {
       return i.annotation("service") != undefined ||
         i.annotation("events") != undefined ||
         i.annotation("actor") != undefined;
@@ -77,7 +75,7 @@ export default function (
     },
   };
 
-  const apexCodegenMod = "https://deno.land/x/apex_codegen@v0.1.6/go/mod.ts";
+  const apexCodegenMod = "jsr:@apexlang/codegen@^0.2.0/go";
 
   generates[`${prefixPkg}${pkg}/wapc.go`] = {
     module: apexCodegenMod,
@@ -111,7 +109,7 @@ export default function (
 
   const tasks = config.tasks ||= {};
   const names = new Set<string>(Object.keys(tasks).map((k) => taskName(k)));
-  const defaultTasks: Record<string, TaskDefinition> = {
+  const defaultTasks: Record<string, TaskConfig> = {
     all: {
       description: "Clean, generate, and build",
       deps: ["clean", "generate", "deps", "build"],
@@ -128,7 +126,7 @@ export default function (
       description: "Build the module",
       cmds: [
         "mkdir -p build",
-        `tinygo build -o build/${config.config.name}.wasm --scheduler=none --target=wasi -no-debug cmd/main.go`,
+        `tinygo build -o build/${config.config.name}.wasm --scheduler=none --no-debug --target=wasip1 --buildmode=c-shared cmd/main.go`,
       ],
     },
     test: {

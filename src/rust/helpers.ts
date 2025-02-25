@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
-import { ObjectMap, Parameter } from "../deps/core/model.ts";
+import { ObjectMap, Parameter } from "../../deps/@apexlang/core/model/mod.ts";
 import { snakeCase } from "./utils/mod.ts";
-import { utils as rustUtils } from "../deps/codegen/rust.ts";
+import { utils as rustUtils } from "../../deps/@apexlang/codegen/rust/mod.ts";
 
 export function functionName(str: string): string {
   return rustUtils.rustify(str);

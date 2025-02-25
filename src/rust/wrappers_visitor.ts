@@ -1,16 +1,15 @@
-import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
 import { functionName, varAccessArg } from "./helpers.ts";
-import { shouldIncludeHandler } from "./utils/mod.ts";
-import * as utils from "../deps/codegen/utils.ts";
-import { utils as rustUtils } from "../deps/codegen/rust.ts";
+import * as utils from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { utils as rustUtils } from "../../deps/@apexlang/codegen/rust/mod.ts";
+import {
+  isHandler,
+  isService,
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
 
 export class WrapperVarsVisitor extends BaseVisitor {
-  constructor(writer: Writer) {
-    super(writer);
-  }
-
-  visitOperation(context: Context): void {
-    if (!shouldIncludeHandler(context)) {
+  override visitOperation(context: Context): void {
+    if (!isService(context)) {
       return;
     }
     const operation = context.operation!;
@@ -31,7 +30,7 @@ static ${fnName}: once_cell::sync::Lazy<std::sync::RwLock<Option<fn(${paramTypes
 `);
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  override visitAllOperationsAfter(context: Context): void {
     if (context.config.handlerPreamble == true) {
       this.write(`}\n\n`);
     }
@@ -40,12 +39,8 @@ static ${fnName}: once_cell::sync::Lazy<std::sync::RwLock<Option<fn(${paramTypes
 }
 
 export class WrapperFuncsVisitor extends BaseVisitor {
-  constructor(writer: Writer) {
-    super(writer);
-  }
-
-  visitOperation(context: Context): void {
-    if (!shouldIncludeHandler(context)) {
+  override visitOperation(context: Context): void {
+    if (!isHandler(context)) {
       return;
     }
     const operation = context.operation!;

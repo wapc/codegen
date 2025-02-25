@@ -1,15 +1,17 @@
 # waPC Code Generators
 
-This library provides the code generators for producing waPC modules using the [Apex language](https://apexlang.io).
+This library provides the code generators for producing waPC modules using the
+[Apex language](https://apexlang.io).
 
 ## Installation
 
-Make sure you have the Apex CLI installed. Here are [the instructions](https://apexlang.io/docs/getting-started).
+Make sure you have the Apex CLI installed. Here are
+[the instructions](https://apexlang.io/docs/getting-started).
 
 From your terminal, run:
 
 ```shell
-apex install https://deno.land/x/wapc_codegen/templates.ts
+apex install jsr:@wapc/codegen/templates
 ```
 
 ```shell
@@ -46,4 +48,6 @@ ls -l build
 -rwxr-xr-x  1 uname  staff  18454 Sep 19 14:56 hello-world.wasm
 ```
 
-If you load the project in VS Code (`code .` from the terminal if VS code is in your path), a task will monitor the Apex interface definition for changes and regenerate boilerplate code.
+If you load the project in VS Code (`code .` from the terminal if VS code is in
+your path), a task will monitor the Apex interface definition for changes and
+regenerate boilerplate code.

@@ -1,16 +1,21 @@
-import { BaseVisitor, Context, Writer } from "../deps/core/model.ts";
+import {
+  BaseVisitor,
+  Context,
+  Writer,
+} from "../../deps/@apexlang/core/model/mod.ts";
 import { fieldName, functionName } from "./helpers.ts";
-import { formatComment, shouldIncludeHostCall } from "./utils/mod.ts";
-import * as utils from "../deps/codegen/utils.ts";
-import { utils as rustUtils } from "../deps/codegen/rust.ts";
+import { formatComment } from "./utils/mod.ts";
+import * as utils from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { utils as rustUtils } from "../../deps/@apexlang/codegen/rust/mod.ts";
+import { isProvider } from "../../deps/@apexlang/codegen/utils/mod.ts";
 
 export class HostVisitor extends BaseVisitor {
   constructor(writer: Writer) {
     super(writer);
   }
 
-  visitOperation(context: Context): void {
-    if (!shouldIncludeHostCall(context)) {
+  override visitOperation(context: Context): void {
+    if (!isProvider(context)) {
       return;
     }
     if (context.config.hostPreamble != true) {
@@ -48,7 +53,7 @@ pub fn default() -> ${className} {
 impl ${className} {`);
       context.config.hostPreamble = true;
     }
-    const operation = context.operation!;
+    const { namespace, operation, interface: iface } = context;
     this.write(formatComment("  /// ", operation.description));
     this.write(`pub fn ${functionName(operation.name)}(&self`);
     operation.parameters.map((param, _index) => {
@@ -81,8 +86,8 @@ impl ${className} {`);
       this.write(`
 host_call(
   &self.binding,
-  "${context.namespace.name}",
-  "${operation.name}",
+  "${namespace.name}",
+  "${iface.name}/${operation.name}",
   &vec![],
 )
 `);
@@ -90,8 +95,8 @@ host_call(
       this.write(`
 host_call(
   &self.binding,
-  "${context.namespace.name}",
-  "${operation.name}",
+  "${namespace.name}",
+  "${iface.name}/${operation.name}",
   &wapc_codec::messagepack::serialize(${operation.unaryOp().name})?,
 )
 `);
@@ -104,7 +109,7 @@ let input_args = ${rustUtils.rustifyCaps(operation.name)}Args{
       this.write(`
 host_call(
   &self.binding,
-  "${context.namespace.name}",
+  "${namespace.name}",
   "${operation.name}",
   &wapc_codec::messagepack::serialize(input_args)?,
 )
@@ -127,7 +132,7 @@ host_call(
     super.triggerOperation(context);
   }
 
-  visitAllOperationsAfter(context: Context): void {
+  override visitAllOperationsAfter(context: Context): void {
     if (context.config.hostPreamble == true) {
       this.write(`}\n\n`);
       delete context.config.hostPreamble;

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,23 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { capitalize, isHandler, isVoid } from "../deps/codegen/utils.ts";
-import { BaseVisitor, Context } from "../deps/core/model.ts";
-import { defaultValueForType, expandType, mapArgs } from "./helpers.ts";
+import {
+  capitalize,
+  isHandler,
+  isVoid,
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
+import { expandType, mapArgs } from "./helpers.ts";
 
 export class ScaffoldVisitor extends BaseVisitor {
-  visitNamespaceBefore(context: Context): void {
+  override visitNamespaceBefore(context: Context): void {
     super.visitNamespaceBefore(context);
     const typesVisitor = new TypesVisitor(this.writer);
     context.namespace.accept(context, typesVisitor);
   }
 
-  visitAllOperationsBefore(context: Context): void {
+  override visitAllOperationsBefore(context: Context): void {
     const registration = new HandlerRegistrationVisitor(this.writer);
     context.namespace.accept(context, registration);
   }
 
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isHandler(context)) {
       return;
     }
@@ -54,7 +58,7 @@ export class ScaffoldVisitor extends BaseVisitor {
     this.write(`}\n`);
   }
 
-  visitNamespaceAfter(_context: Context): void {
+  override visitNamespaceAfter(_context: Context): void {
     this.write(`\n`);
     this.write(`// Boilerplate code for waPC.  Do not remove.\n\n`);
     this.write(`import { handleCall, handleAbort } from "@wapc/as-guest";\n\n`);
@@ -78,11 +82,11 @@ function abort(
 }
 
 class HandlerRegistrationVisitor extends BaseVisitor {
-  visitAllOperationsBefore(_context: Context): void {
+  override visitAllOperationsBefore(_context: Context): void {
     this.write(`export function wapc_init(): void {\n`);
   }
 
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (!isHandler(context)) {
       return;
     }
@@ -92,7 +96,7 @@ class HandlerRegistrationVisitor extends BaseVisitor {
     );
   }
 
-  visitAllOperationsAfter(_context: Context): void {
+  override visitAllOperationsAfter(_context: Context): void {
     this.write(`}\n`);
   }
 }
@@ -101,13 +105,13 @@ class TypesVisitor extends BaseVisitor {
   hasOperations = false;
   hasObjects = false;
 
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     if (isHandler(context)) {
       this.hasOperations = true;
     }
   }
 
-  visitType(context: Context): void {
+  override visitType(context: Context): void {
     if (!this.hasObjects) {
       this.write(`import { `);
       this.hasObjects = true;
@@ -117,7 +121,7 @@ class TypesVisitor extends BaseVisitor {
     this.write(`${context.type!.name}`);
   }
 
-  visitTypesAfter(context: Context): void {
+  override visitTypesAfter(context: Context): void {
     if (this.hasOperations) {
       if (!this.hasObjects) {
         this.write(`import { `);

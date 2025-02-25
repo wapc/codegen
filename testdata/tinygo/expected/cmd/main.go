@@ -6,7 +6,8 @@ import (
 	"github.com/apexlang/outputtest/pkg/outputtest"
 )
 
-func main() {
+//go:wasmexport wapc_init
+func Initialize() {
 	// Create providers
 	repositoryProvider := outputtest.NewRepository()
 

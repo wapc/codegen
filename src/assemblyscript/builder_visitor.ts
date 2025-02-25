@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { capitalize } from "../deps/codegen/utils.ts";
-import { BaseVisitor, Context } from "../deps/core/model.ts";
+import { capitalize } from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { BaseVisitor, Context } from "../../deps/@apexlang/core/model/mod.ts";
 import { expandType } from "./helpers.ts";
 
 export class BuilderVisitor extends BaseVisitor {
-  visitTypeBefore(context: Context): void {
+  override visitTypeBefore(context: Context): void {
     super.triggerTypeBefore(context);
     const className = context.type.name;
     this.write(`export class ${className}Builder {
   instance: ${className} = new ${className}();\n`);
   }
 
-  visitTypeField(context: Context): void {
+  override visitTypeField(context: Context): void {
     const className = context.type.name;
     const field = context.field!;
     this.write(`\n`);
@@ -42,7 +42,7 @@ export class BuilderVisitor extends BaseVisitor {
     super.triggerTypeField(context);
   }
 
-  visitTypeFieldsAfter(context: Context): void {
+  override visitTypeFieldsAfter(context: Context): void {
     this.write(`\n`);
     this.write(`  build(): ${context.type.name} {
       return this.instance;
@@ -50,7 +50,7 @@ export class BuilderVisitor extends BaseVisitor {
     super.triggerTypeFieldsAfter(context);
   }
 
-  visitTypeAfter(context: Context): void {
+  override visitTypeAfter(context: Context): void {
     this.write(`}\n\n`);
     super.triggerTypeAfter(context);
   }

@@ -1,5 +1,0 @@
-namespace "greeting"
-
-interface wapc {
-  sayHello(name: string): string
-}

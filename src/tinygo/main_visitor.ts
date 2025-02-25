@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, Writer } from "../deps/core/model.ts";
+import { Context, Writer } from "../../deps/@apexlang/core/model/mod.ts";
 import {
   camelCase,
   InterfaceUsesVisitor,
   isService,
   UsesVisitor,
-} from "../deps/codegen/utils.ts";
-import { getImports, GoVisitor } from "../deps/codegen/go.ts";
+} from "../../deps/@apexlang/codegen/utils/mod.ts";
+import { getImports, GoVisitor } from "../../deps/@apexlang/codegen/go/mod.ts";
 
 export class MainVisitor extends GoVisitor {
   // Overridable visitor implementations
@@ -29,14 +29,14 @@ export class MainVisitor extends GoVisitor {
     new InterfaceUsesVisitor(writer);
   uses: UsesVisitor | undefined = undefined;
 
-  writeHead(context: Context): void {
+  override writeHead(context: Context): void {
     const prev = context.config.package;
     context.config.package = "main";
     super.writeHead(context);
     context.config.package = prev;
   }
 
-  visitNamespaceBefore(context: Context): void {
+  override visitNamespaceBefore(context: Context): void {
     const prefixPkg = (context.config.prefixPkg || `pkg/`).replace(
       /^\.\//g,
       "",
@@ -53,10 +53,11 @@ export class MainVisitor extends GoVisitor {
     getImports(context).firstparty(importPath);
   }
 
-  visitAllOperationsBefore(context: Context): void {
+  override visitAllOperationsBefore(context: Context): void {
     this.write(`\n`);
 
-    this.write(`func main() {\n`);
+    this.write(`//go:wasmexport wapc_init
+func Initialize() {\n`);
     const packageName = context.config["package"] || "module";
     this.write(`// Create providers\n`);
     this.uses!.dependencies.forEach((dependency) => {
@@ -91,7 +92,7 @@ export class MainVisitor extends GoVisitor {
 }
 
 class HandlerRegistrationVisitor extends GoVisitor {
-  visitInterface(context: Context): void {
+  override visitInterface(context: Context): void {
     if (!isService(context)) {
       return;
     }

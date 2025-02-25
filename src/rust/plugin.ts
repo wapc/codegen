@@ -1,8 +1,6 @@
-import {
-  Configuration,
-  TaskDefinition,
-} from "https://deno.land/x/apex_cli@v0.0.15/src/config.ts";
-import * as apex from "../deps/core/mod.ts";
+import * as ast from "../../deps/@apexlang/core/ast/mod.ts";
+import { Configuration } from "../../deps/@apexlang/apex/config/mod.ts";
+import { TaskConfig } from "../../deps/@apexlang/apex/task/mod.ts";
 
 const importUrl = new URL(".", import.meta.url);
 function urlify(relpath: string): string {
@@ -18,7 +16,7 @@ function taskName(taskExpr: string): string {
 }
 
 export default function (
-  _doc: apex.ast.Document,
+  _doc: ast.Document,
   config: Configuration,
 ): Configuration {
   config.config ||= {};
@@ -36,8 +34,8 @@ export default function (
   generates[`src/generated.rs`] = {
     module: mod,
     config: {
-      handlerInterfaces: ["wapc"],
-      hostInterfaces: ["wapc"],
+      // handlerInterfaces: ["wapc"],
+      // hostInterfaces: ["wapc"],
       serde: true,
     },
   };
@@ -46,8 +44,8 @@ export default function (
     ifNotExists: true,
     module: mod,
     config: {
-      handlerInterfaces: ["wapc"],
-      hostInterfaces: ["wapc"],
+      // handlerInterfaces: ["wapc"],
+      // hostInterfaces: ["wapc"],
       serde: true,
       use: "generated",
       derive: {
@@ -58,10 +56,14 @@ export default function (
 
   const tasks = config.tasks ||= {};
   const names = new Set<string>(Object.keys(tasks).map((k) => taskName(k)));
-  const defaultTasks: Record<string, TaskDefinition> = {
+  const defaultTasks: Record<string, TaskConfig> = {
     all: {
       description: "Clean, generate, and build",
       deps: ["generate", "clean", "build"],
+    },
+    deps: {
+      description: "Install necessary dependencies",
+      cmds: [],
     },
     clean: {
       description: "Clean the build directory",

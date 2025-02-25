@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The waPC Authors.
+Copyright 2025 The waPC Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Context, Writer } from "../deps/core/model.ts";
+import { Context, Writer } from "../../deps/@apexlang/core/model/mod.ts";
 import { ClassVisitor } from "./class_visitor.ts";
 import { HostVisitor } from "./host_visitor.ts";
 import { HandlersVisitor } from "./handlers_visitor.ts";
 import { WrappersVisitor } from "./wrappers_visitor.ts";
 import { BuilderVisitor } from "./builder_visitor.ts";
-import { convertOperationToType } from "../deps/codegen/utils.ts";
+import { convertOperationToType } from "../../deps/@apexlang/codegen/utils/mod.ts";
 import { expandType } from "./helpers.ts";
 
 export class ModuleVisitor extends ClassVisitor {
@@ -52,26 +52,26 @@ export class ModuleVisitor extends ClassVisitor {
     );
   }
 
-  visitNamespaceBefore(context: Context): void {
+  override visitNamespaceBefore(context: Context): void {
     this.write(
       `import { Decoder, Writer, Encoder, Sizer, Codec } from "@wapc/as-msgpack";\n\n`,
     );
     super.triggerNamespaceBefore(context);
   }
 
-  visitAlias(context: Context): void {
+  override visitAlias(context: Context): void {
     const { alias } = context;
     this.write(
       `export type ${alias.name} = ${expandType(alias.type, false)}\n\n`,
     );
   }
 
-  visitInterface(context: Context): void {
+  override visitInterface(context: Context): void {
     this.write(`\n`);
     super.triggerInterface(context);
   }
 
-  visitOperation(context: Context): void {
+  override visitOperation(context: Context): void {
     const { interface: iface, operation } = context;
     if (operation.parameters.length == 0 || operation.isUnary()) {
       return;
@@ -83,7 +83,7 @@ export class ModuleVisitor extends ClassVisitor {
     super.triggerOperation(context);
   }
 
-  visitTypeFieldsAfter(context: Context): void {
+  override visitTypeFieldsAfter(context: Context): void {
     const { type } = context;
     super.visitTypeFieldsAfter(context);
     this.write(`\n`);
@@ -93,7 +93,7 @@ export class ModuleVisitor extends ClassVisitor {
     super.triggerTypeFieldsAfter(context);
   }
 
-  visitTypeAfter(context: Context): void {
+  override visitTypeAfter(context: Context): void {
     this.write(`}\n\n`);
 
     const builder = new BuilderVisitor(this.writer);
