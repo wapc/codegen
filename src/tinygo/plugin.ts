@@ -75,7 +75,7 @@ export default function (
     },
   };
 
-  const apexCodegenMod = "jsr:@apexlang/codegen@^0.2.0/go";
+  const apexCodegenMod = "jsr:@apexlang/codegen@^0.2.7/go";
 
   generates[`${prefixPkg}${pkg}/wapc.go`] = {
     module: apexCodegenMod,
